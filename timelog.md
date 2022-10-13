@@ -38,3 +38,13 @@
 
 * *6 hours* Researched more Pytorch tutorials and improved the very basic neural network  (72% accuracy)
 * *2 hours* Researched nn layers and how to improve nn accuracy through other means (avoiding overfitting, training hyperparameters, etc)
+
+### 12 Oct 2022
+
+* *0.5 hours* Finished reading the project guidance notes
+* *1 hour* Retroactively wrote timelog for the past couple weeks
+* *0.5 hour* Organised project files and made temporary commit to demonstrate progress
+
+### 13 Oct 2022
+
+* *1 hour* Gathered minutes of last meeting to send to supervisor
