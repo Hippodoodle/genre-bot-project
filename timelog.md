@@ -53,3 +53,4 @@
 
 * *1 hour* Researched cross validation
 * *0.5 hours* Third supervisor meeting
+* *1 hour* Researched python spectrogram generation libraries
