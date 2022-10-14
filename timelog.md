@@ -29,12 +29,12 @@
 
 * *0.5 hours* Second supervisor meeting (meeting notes in README)
 
-## 9 Oct 2022
+### 9 Oct 2022
 
 * *2 hours* Researched and installed Pytorch and dependencies, wrote requirements.txt for project
 * *9 hours* Reasearched Pytorch tutorials and implemented a basic CIFAR10 image classification model (57% accuracy)
 
-## 10 Oct 2022
+### 10 Oct 2022
 
 * *6 hours* Researched more Pytorch tutorials and improved the very basic neural network  (72% accuracy)
 * *2 hours* Researched nn layers and how to improve nn accuracy through other means (avoiding overfitting, training hyperparameters, etc)
@@ -43,8 +43,13 @@
 
 * *0.5 hours* Finished reading the project guidance notes
 * *1 hour* Retroactively wrote timelog for the past couple weeks
-* *0.5 hour* Organised project files and made temporary commit to demonstrate progress
+* *0.5 hours* Organised project files and made temporary commit to demonstrate progress
 
 ### 13 Oct 2022
 
 * *1 hour* Gathered minutes of last meeting to send to supervisor
+
+### 14 Oct 2022
+
+* *1 hour* Researched cross validation
+* *0.5 hours* Third supervisor meeting
