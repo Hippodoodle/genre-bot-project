@@ -37,5 +37,13 @@
         - No loss of data from conversion to spectrogram -> to investigate
         - Investigate spotify api when the time comes, gather initial database by hand if necessary
         - Asked for the project proposal description
-
-
+- 14/10/2022 Third Supervisor Meeting
+    - Notes:
+        - Weekly status reports: quick summary, this is what I did and what I plan on doing (headlines), any pressing questions 
+        - Look into a downloadable dataset of audio data
+        - Look into other similar projects
+        - Consider simpler, uniform songs first
+        - Consider generating visual patterns based on trained model to see the emerging patterns
+        - Research standards for spectrograms and spectrogram generation (logarithmic scale, miel scale)
+        - Test out different resolutions of spectrogram (trade off between training time and data loss)
+        - 100 datapoints is good to start with, check against random chance and if it's promissing, improve the dataset
