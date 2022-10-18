@@ -64,3 +64,4 @@
 ### 18 Oct 2022
 
 * *0.5 hours* Updated requirements.txt and set up local environment again
+* *1 hour* Researched CNN architectures
