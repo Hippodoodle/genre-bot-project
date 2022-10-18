@@ -16,6 +16,9 @@ from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import random_split
 
 
+DATA_DIR = "./data"
+
+
 class Net(nn.Module):
     def __init__(self, l1=1024, l2=512):
         super().__init__()
@@ -50,7 +53,7 @@ class Net(nn.Module):
         return self.network(x)
 
 
-def load_data(data_dir="./data"):
+def load_data(data_dir=DATA_DIR):
     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     trainset = torchvision.datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform)
@@ -60,7 +63,7 @@ def load_data(data_dir="./data"):
     return trainset, testset
 
 
-def train_cifar(config, checkpoint_dir=None, data_dir="./data"):
+def train_cifar(config, checkpoint_dir=None, data_dir=DATA_DIR):
 
     start = time.time()
 
@@ -172,16 +175,24 @@ def test_accuracy(net, device="cpu"):
     return correct / total
 
 
-def main(num_samples=10, max_num_epochs=10, gpus_per_trial=1):
-    data_dir = os.path.abspath("./data")
+def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
+    data_dir = os.path.abspath(DATA_DIR)
     load_data(data_dir)
 
-    config = {
-        "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-        "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-        "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8, 16])
-    }
+    if num_samples == 1:
+        config = {
+            "l1": 1024,
+            "l2": 512,
+            "lr": 0.001,
+            "batch_size": 4
+        }
+    else:
+        config = {
+            "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+            "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+            "lr": tune.loguniform(1e-4, 1e-1),
+            "batch_size": tune.choice([2, 4, 8, 16])
+        }
 
     scheduler = ASHAScheduler(
         metric="loss",
@@ -224,5 +235,8 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=1):
 
 
 if __name__ == "__main__":
-    # You can change the number of GPUs per trial here:
-    main(num_samples=15, max_num_epochs=10, gpus_per_trial=1)
+    TUNE = False
+    if TUNE:
+        main(num_samples=15, max_num_epochs=10, gpus_per_trial=1)
+    else:
+        main()
