@@ -60,3 +60,7 @@
 * *5 hours* Implemented hyperparameter training
 * *1 hour* Bug fixing and reading ray library docs
 * *1 hour* Add option to train on preset config without hyperparameter tuning
+
+### 18 Oct 2022
+
+* *0.5 hours* Updated requirements.txt and set up local environment again
