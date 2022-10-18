@@ -58,3 +58,4 @@
 ### 17 Oct 2022
 
 * *5 hours* Implemented hyperparameter training
+* *1 hour* Bug fixing and reading ray library docs
