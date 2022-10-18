@@ -59,3 +59,4 @@
 
 * *5 hours* Implemented hyperparameter training
 * *1 hour* Bug fixing and reading ray library docs
+* *1 hour* Add option to train on preset config without hyperparameter tuning
