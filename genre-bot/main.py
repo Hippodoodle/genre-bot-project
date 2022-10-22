@@ -2,11 +2,9 @@ import os
 import time
 from functools import partial
 
-import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
@@ -14,7 +12,6 @@ from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import random_split
-
 
 DATA_DIR = "./data"
 
@@ -203,7 +200,8 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
 
     reporter = CLIReporter(
         # parameter_columns=["l1", "l2", "lr", "batch_size"],
-        metric_columns=["loss", "accuracy", "training_iteration"])
+        metric_columns=["loss", "accuracy", "training_iteration"],
+        max_report_frequency=60)
 
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
