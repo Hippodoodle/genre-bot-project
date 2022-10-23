@@ -65,3 +65,10 @@
 
 * *0.5 hours* Updated requirements.txt and set up local environment again
 * *1 hour* Researched CNN architectures
+
+### 22 Oct 2022
+
+* *1 hour* Researched addapting CNN to have higher resolution input
+* *1 hour* Various project maintenance and new script/files created for start of custom dataset generation
+* *1 hour* Research into premade tagged music databases for machine learning
+* *3 hours* Begin coding of dataset generation script
