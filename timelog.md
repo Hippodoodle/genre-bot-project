@@ -72,3 +72,7 @@
 * *1 hour* Various project maintenance and new script/files created for start of custom dataset generation
 * *1 hour* Research into premade tagged music databases for machine learning
 * *3 hours* Begin coding of dataset generation script
+
+### 24 Oct 2022
+
+* *1 hour* Researched existing tagged music databases (Probably going to use FMA https://github.com/mdeff/fma)
