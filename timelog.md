@@ -76,3 +76,7 @@
 ### 24 Oct 2022
 
 * *1 hour* Researched existing tagged music databases (Probably going to use FMA https://github.com/mdeff/fma)
+
+### 25 Oct 2022
+
+* *1 hour* Fixed dependencies
