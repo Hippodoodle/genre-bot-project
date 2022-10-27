@@ -80,3 +80,8 @@
 ### 25 Oct 2022
 
 * *1 hour* Fixed dependencies
+
+### 26 Oct 2022
+
+* *3 hours* Debugging dependencies and compatibility issues
+* *2 hours* Understanding fma dataset and trying to manipulate it
