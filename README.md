@@ -47,3 +47,34 @@
         - Research standards for spectrograms and spectrogram generation (logarithmic scale, miel scale)
         - Test out different resolutions of spectrogram (trade off between training time and data loss)
         - 100 datapoints is good to start with, check against random chance and if it's promissing, improve the dataset
+28/10/2022 Fourth Supervisor Meeting
+    - Notes:
+        - How to save spectrograms: png but compression, try binary if possible
+        - Spectrogram resolution is fine
+        - Chris will send help with pandas
+
+
+***
+
+#### Sources & Materials
+
+https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+https://www.kaggle.com/code/shadabhussain/cifar-10-cnn-using-pytorch
+https://www.youtube.com/watch?v=d9QHNkD_Pos&ab_channel=freeCodeCamp.org
+https://pytorch.org/tutorials/intermediate/tensorboard_tutorial.html
+https://pytorch.org/tutorials/beginner/basics/buildmodel_tutorial.html
+https://pytorch.org/tutorials/beginner/hyperparameter_tuning_tutorial.html
+https://towardsdatascience.com/choosing-a-hyperparameter-tuning-library-ray-tune-or-aisaratuners-b707b175c1d7
+https://docs.ray.io/en/latest/ray-air/package-ref.html
+https://www.jeremyjordan.me/convnet-architectures
+https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html
+https://arxiv.org/abs/1207.0580
+https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.spectrogram.html
+https://www.youtube.com/watch?v=3gzI4Z2OFgY&ab_channel=ValerioVelardo-TheSoundofAI
+https://github.com/musikalkemist/AudioSignalProcessingForML/blob/master/16%20-%20Extracting%20Spectrograms%20from%20Audio%20with%20Python/Extracting%20Spectrograms%20from%20Audio%20with%20Python.ipynb
+https://music-classification.github.io/tutorial/part2_basics/input-representations.html
+https://arxiv.org/abs/1612.01840
+https://librosa.org/doc/latest/install.html
+https://paperswithcode.com/dataset/fma
+https://github.com/mdeff/fma
+https://librosa.org/doc/main/generated/librosa.feature.melspectrogram.html
