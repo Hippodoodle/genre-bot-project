@@ -13,7 +13,7 @@ from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import random_split
 
-DATA_DIR = "./data"
+DATA_DIR = "./data-cifar-10"
 
 
 class Net(nn.Module):
@@ -201,7 +201,7 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
     reporter = CLIReporter(
         # parameter_columns=["l1", "l2", "lr", "batch_size"],
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=60)
+        max_report_frequency=20)
 
     result = tune.run(
         partial(train_cifar, data_dir=data_dir),
