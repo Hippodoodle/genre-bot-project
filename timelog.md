@@ -85,3 +85,4 @@
 
 * *3 hours* Debugging dependencies and compatibility issues
 * *2 hours* Understanding fma dataset and trying to manipulate it
+* *3 hours* Writing data generation script (little progress)
