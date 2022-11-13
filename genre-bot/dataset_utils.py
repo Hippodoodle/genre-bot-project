@@ -5,6 +5,7 @@ import time
 
 import librosa
 import librosa.display
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -27,23 +28,45 @@ from sklearn.utils import shuffle
 AUDIO_DIR = "./data/fma/data/fma_small/"
 SPECT_DIR = "./data/fma_small_spect/"  # TODO: Write method to save data
 
+matplotlib.use("Agg")
+
 
 def get_audio_path(audio_dir, track_id):
     tid_str = '{:06d}'.format(track_id)
     return os.path.join(audio_dir, tid_str[:3], tid_str + '.mp3')
 
 
+def get_spect_path(spect_dir, track_id):
+    tid_str = '{:06d}'.format(track_id)
+    return os.path.join(spect_dir, tid_str + '.png')
+
+
+def get_track_id_from_path(audio_path):
+    tid_str = '{:06d}'.format(track_id)
+    return os.path.join(audio_dir, tid_str[:3], tid_str + '.mp3')
+
+
+def track_spectrogram_exists(track_id):
+    return None
+
+
 def audio_to_spectrogram(audio_dir, track_id, spect_dir):
 
     filename = get_audio_path(audio_dir, track_id)
-    y, sr = librosa.load(filename, sr=None, mono=True, duration=30)
+    try:
+        y, sr = librosa.load(filename, sr=None, mono=True, duration=30)
+    except:
+        return
 
     # Passing through arguments to the Mel filters
     S = librosa.feature.melspectrogram(y=y, sr=sr)
     plt.axis('off')
+    plt.gca().axis('off')
+    plt.margins(0, 0)
     fig, ax = plt.subplots()
-    ax.get_xaxis().set_visible(False)
-    ax.get_yaxis().set_visible(False)
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    plt.gca().xaxis.set_major_locator(plt.NullLocator())
+    plt.gca().yaxis.set_major_locator(plt.NullLocator())
     S_dB = librosa.power_to_db(S, ref=np.max)
     librosa.display.specshow(S_dB, sr=sr, fmax=8000, ax=ax)
     fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),  # TODO: remove white boarder
@@ -51,6 +74,7 @@ def audio_to_spectrogram(audio_dir, track_id, spect_dir):
                 bbox_inches='tight',
                 pad_inches=0,
                 dpi=900)
+    plt.close('all')
 
 
 def load_tracks(filepath):
@@ -157,56 +181,20 @@ def testing(tracks, genres):
     plt.show()
 
 
-def generate_and_check_data(tracks, genres):
+def get_track_genre(track_id: int, tracks: pd.DataFrame) -> str:
+    return str(tracks.loc[track_id]['track', 'genre_top'])
 
-    # Select Small Subset
-    small = tracks[tracks['set', 'subset'] <= 'small']
-    if small.shape == (8000, 52):
-        print("Small Subset Selected Successfully")
+
+def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_str='small', ):
+
+    # Select Subset
+    subset = tracks[tracks['set', 'subset'] <= subset_str]
+    if subset.shape == (8000, 52):
+        print(f"Success {subset_str} subset selected")
     else:
         print("Error: Something wrong with the dataset (wrong shape)")
 
     small_indices = small.index.to_list()
-    print(f"Small Index: {small_indices}, {len(small_indices)}")
-
-    # Select Genres
-    print('{} top-level genres'.format(len(genres['top_level'].unique())))
-    print(genres.loc[genres['top_level'].unique()].sort_values('#tracks', ascending=False))
-
-    print(genres.sort_values('#tracks').head(10))
-
-    # Load Audio
-    filename = get_audio_path(AUDIO_DIR, 2)
-
-    print('File: {}'.format(filename))
-
-    x, sr = librosa.load(filename, sr=None, mono=True, duration=30)
-    print('Duration: {:.2f}s, {} samples'.format(x.shape[-1] / sr, x.size))
-
-    start, end = 7, 17
-    # Librosa Stuff
-    librosa.display.waveshow(x, sr=sr, alpha=0.5)
-    plt.vlines([start, end], -1, 1)
-
-    start = len(x) // 2
-    plt.figure()
-    plt.plot(x[start:start+2000])
-    plt.ylim((-1, 1))
-    plt.show()
-
-    # stuff 2
-    stft = np.abs(librosa.stft(x, n_fft=2048, hop_length=512))
-    mel = librosa.feature.melspectrogram(sr=sr, S=stft**2)
-    log_mel = librosa.db_to_amplitude(mel)
-
-    librosa.display.specshow(log_mel, sr=sr, hop_length=512, x_axis='time', y_axis='mel')
-    plt.show()
-
-    # stuff 3
-    mfcc = librosa.feature.mfcc(S=librosa.power_to_db(mel), n_mfcc=20)
-    mfcc = skl.preprocessing.StandardScaler().fit_transform(mfcc)
-    librosa.display.specshow(mfcc, sr=sr, x_axis='time')
-    plt.show()
 
 
 def main():
@@ -233,24 +221,40 @@ def main():
     # print(f"Train: {train.index}, Val: {val.index}, Test: {test.index}")  # TODO: debug
 
     small_indices = small.index.to_list()
-    #print(f"Small Index: {small_indices}, {len(small_indices)}")
+    # print(f"Small Index: {small_indices}, {len(small_indices)}")
 
     GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
     genres_list = []
-    for i in small_indices:
-        genre = str(tracks.loc[i]['track', 'genre_top'])
+    for id in small_indices:
+        genre = str(tracks.loc[id]['track', 'genre_top'])
         if genre not in genres_list:
             genres_list.append(genre)
     print(f"All genres in Small: {genres_list} {GENRES == genres_list}")
 
-    print("First 10 track ids and genres:")
-    for i in small_indices[:3]:
-        print(i, tracks.loc[i]['track', 'genre_top'], tracks.loc[i]['track', 'title'])
-        #print(i, tracks['track', 'genre_top'].loc[i], tracks['track', 'title'].loc[i])
-        audio_to_spectrogram(AUDIO_DIR, i, SPECT_DIR)
+    # Make directories if they don't exist
+    if not os.path.exists(SPECT_DIR):
+        os.makedirs(SPECT_DIR)
+    train_dir = os.path.join(SPECT_DIR, 'training')
+    validation_dir = os.path.join(SPECT_DIR, 'validation')
+    test_dir = os.path.join(SPECT_DIR, 'test')
+    if not os.path.exists(train_dir):
+        os.makedirs(train_dir)
+    if not os.path.exists(validation_dir):
+        os.makedirs(validation_dir)
+    if not os.path.exists(test_dir):
+        os.makedirs(test_dir)
+
+    fresh = False
+    for id in small_indices:
+        # print(i, tracks['track', 'genre_top'].loc[i], tracks['track', 'title'].loc[i])
+        track_split = str(tracks.loc[id]['set', 'split'])
+        track_path = os.path.join(SPECT_DIR, track_split)
+        if not os.path.exists(get_spect_path(track_path, id)) or fresh:
+            print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
+            audio_to_spectrogram(AUDIO_DIR, id, track_path)
 
     # labels_onehot = LabelBinarizer().fit_transform(tracks['track', 'genre_top'])  # TODO: finish
-    #labels_onehot = pd.DataFrame(labels_onehot, index=tracks.index)
+    # labels_onehot = pd.DataFrame(labels_onehot, index=tracks.index)
 
 
 if __name__ == "__main__":

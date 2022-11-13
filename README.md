@@ -53,6 +53,14 @@
         - Spectrogram resolution is fine
         - Chris will send help with pandas
 
+07/11/2022 Fifth Supervisor Meeting
+    -Notes:
+        - Use ImageNet dataset example/tutorials for loading in data
+        - file tree structure to sort data into subsets (train/rock/ etc)
+        - research format of input into model
+        - could as an extension compare performance with a resnet model (for diss)
+        - compare other research done on this topic (for diss)
+
 
 ***
 

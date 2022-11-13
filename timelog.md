@@ -90,3 +90,11 @@
 ### 28 Oct 2022
 
 * *5 hours* Wrote script to generate spectrograms and selecte train, val and test sets of data
+
+### 9 Nov 2022
+
+* *2 hours* Wrote more script to generate spectrograms and selecte train, val and test sets of data
+
+### 12 Nov 2022
+
+* *5 hours* More of the same
