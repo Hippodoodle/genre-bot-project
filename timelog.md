@@ -98,3 +98,19 @@
 ### 12 Nov 2022
 
 * *5 hours* More of the same
+
+### 13 Nov 2022
+
+* *2 hours* Finished data_utils script 
+* *3.5 hours* Converted audio data to spectrograms
+* *2 hours* Researched and wrote code to load data into the CNN model (current issue with CUDA memory allocation)
+
+### 14 Nov 2022
+
+* *1 hour* Added custom DPI function for data loading
+* *1 hour* Modified dataset_utils to load only 2 genres for proof of concept model
+* *3 hour* Researched and rebuilt CNN and data transforms so that it would work (trains)
+
+### 21 Nov 2022
+
+* *2 hours* Re working code to be more organised and linted, adding comments for demonstration and easily accessible global variables for running tests
