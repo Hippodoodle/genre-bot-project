@@ -25,8 +25,12 @@ from sklearn.svm import SVC, LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import shuffle
 
-AUDIO_DIR = "./data/fma/data/fma_small/"
-SPECT_DIR = "./data/fma_small_spect/"  # TODO: Write method to save data
+AUDIO_DIR = "./data/fma/data/fma_small"
+SPECT_DIR = "./data/fma_small_spect_dpi900"
+SPECT_DIR = "./data/fma_small_spect_dpi200"
+SPECT_DIR = "./data/fma_small_spect_dpi100"
+
+DPI = 100
 
 matplotlib.use("Agg")
 
@@ -38,16 +42,16 @@ def get_audio_path(audio_dir, track_id):
 
 def get_spect_path(spect_dir, track_id):
     tid_str = '{:06d}'.format(track_id)
+    spect_dir = os.path.join(spect_dir, )
     return os.path.join(spect_dir, tid_str + '.png')
 
 
-def get_track_id_from_path(audio_path):
-    tid_str = '{:06d}'.format(track_id)
-    return os.path.join(audio_dir, tid_str[:3], tid_str + '.mp3')
+def get_track_id_from_path(track_path):
+    return str(track_path)[-10:-4].lstrip('0')
 
 
-def track_spectrogram_exists(track_id):
-    return None
+def track_spectrogram_exists(spect_dir, track_id):
+    return os.path.exists(get_spect_path(spect_dir, track_id))
 
 
 def audio_to_spectrogram(audio_dir, track_id, spect_dir):
@@ -69,11 +73,11 @@ def audio_to_spectrogram(audio_dir, track_id, spect_dir):
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
     S_dB = librosa.power_to_db(S, ref=np.max)
     librosa.display.specshow(S_dB, sr=sr, fmax=8000, ax=ax)
-    fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),  # TODO: remove white boarder
+    fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),  # TODO: remove white border
                 format='png',
                 bbox_inches='tight',
                 pad_inches=0,
-                dpi=900)
+                dpi=DPI)
     plt.close('all')
 
 
@@ -231,6 +235,9 @@ def main():
             genres_list.append(genre)
     print(f"All genres in Small: {genres_list} {GENRES == genres_list}")
 
+    # Limit genres for initial proof of concept
+    genres_list = ['Folk', 'Rock']
+
     # Make directories if they don't exist
     if not os.path.exists(SPECT_DIR):
         os.makedirs(SPECT_DIR)
@@ -243,18 +250,25 @@ def main():
         os.makedirs(validation_dir)
     if not os.path.exists(test_dir):
         os.makedirs(test_dir)
+    for g in genres_list:
+        if not os.path.exists(os.path.join(train_dir, g)):
+            os.makedirs(os.path.join(train_dir, g))
+        if not os.path.exists(os.path.join(validation_dir, g)):
+            os.makedirs(os.path.join(validation_dir, g))
+        if not os.path.exists(os.path.join(test_dir, g)):
+            os.makedirs(os.path.join(test_dir, g))
 
-    fresh = False
+    # Load all tracks in the index list
+    fresh = True  # Fresh load of all the data if set to True
     for id in small_indices:
-        # print(i, tracks['track', 'genre_top'].loc[i], tracks['track', 'title'].loc[i])
         track_split = str(tracks.loc[id]['set', 'split'])
-        track_path = os.path.join(SPECT_DIR, track_split)
-        if not os.path.exists(get_spect_path(track_path, id)) or fresh:
+        if track_split == 'validation':
+            track_split = 'training'
+        track_genre = get_track_genre(id, tracks)
+        track_path = os.path.join(SPECT_DIR, track_split, track_genre)
+        if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genres_list:
             print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
             audio_to_spectrogram(AUDIO_DIR, id, track_path)
-
-    # labels_onehot = LabelBinarizer().fit_transform(tracks['track', 'genre_top'])  # TODO: finish
-    # labels_onehot = pd.DataFrame(labels_onehot, index=tracks.index)
 
 
 if __name__ == "__main__":
