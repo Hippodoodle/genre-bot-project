@@ -13,8 +13,10 @@ from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import random_split
 
-DATA_DIR = "./data-cifar-10"
+DATA_DIR = "./data/fma_small_spect"
+DATA_DIR = "./data/fma_small_spect_dpi100"
 
+CLASSES = 2
 
 class Net(nn.Module):
     def __init__(self, l1=1024, l2=512):
@@ -39,11 +41,11 @@ class Net(nn.Module):
             nn.MaxPool2d(2, 2),
 
             nn.Flatten(),
-            nn.Linear(256*4*4, l1),
+            nn.Linear(256*32*32, l1),
             nn.ReLU(),
             nn.Linear(l1, l2),
             nn.ReLU(),
-            nn.Linear(l2, 10)
+            nn.Linear(l2, CLASSES)
         )
 
     def forward(self, x):
@@ -51,16 +53,22 @@ class Net(nn.Module):
 
 
 def load_data(data_dir=DATA_DIR):
-    transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    transform = transforms.Compose(
+        [
+            transforms.Resize((256, 256)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ]
+    )
 
-    trainset = torchvision.datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform)
+    trainset = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=transform)
 
-    testset = torchvision.datasets.CIFAR10(root=data_dir, train=False, download=True, transform=transform)
+    testset = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "test"), transform=transform)
 
     return trainset, testset
 
 
-def train_cifar(config, checkpoint_dir=None, data_dir=DATA_DIR):
+def train_fma(config, checkpoint_dir=None, data_dir=DATA_DIR):
 
     start = time.time()
 
@@ -74,6 +82,7 @@ def train_cifar(config, checkpoint_dir=None, data_dir=DATA_DIR):
     net.to(device)
     # Assuming that we are on a CUDA machine, this should print a CUDA device:
     print(f"Using {device} device")
+    print(net)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
@@ -181,7 +190,7 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
             "l1": 1024,
             "l2": 512,
             "lr": 0.001,
-            "batch_size": 4
+            "batch_size": 1
         }
     else:
         config = {
@@ -204,7 +213,7 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
         max_report_frequency=20)
 
     result = tune.run(
-        partial(train_cifar, data_dir=data_dir),
+        partial(train_fma, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
