@@ -52,15 +52,28 @@
         - How to save spectrograms: png but compression, try binary if possible
         - Spectrogram resolution is fine
         - Chris will send help with pandas
-
 07/11/2022 Fifth Supervisor Meeting
-    -Notes:
+    - Notes:
         - Use ImageNet dataset example/tutorials for loading in data
         - file tree structure to sort data into subsets (train/rock/ etc)
         - research format of input into model
         - could as an extension compare performance with a resnet model (for diss)
         - compare other research done on this topic (for diss)
-
+14/11/2022 Sixth Supervisor Meeting
+    - Notes:
+        - Servers available at Uni (stlinux12 and stlinux13 have GPUs)
+        - Start with fewer genres then expand (binary choice)
+        - Lower resolution of input data, perhaps 256x256
+        - both should help fix memory issues
+21/11/2022 Seventh Supervisor Meeting
+    - Notes:
+        - Presented results, discussed next steps
+        - Binary choice good so far, to add more data classes and see how it performs
+        - Tune the model better
+        - Not worry about the resolution of the input
+        - Consider running tests on other binary class sets
+        - Consider examining auxiliary genres and running binary test on most closely related top-genres
+            - expected to see in diss, confusion matrix
 
 ***
 
@@ -86,3 +99,5 @@ https://librosa.org/doc/latest/install.html
 https://paperswithcode.com/dataset/fma
 https://github.com/mdeff/fma
 https://librosa.org/doc/main/generated/librosa.feature.melspectrogram.html
+https://pytorch.org/docs/stable/notes/faq.html
+
