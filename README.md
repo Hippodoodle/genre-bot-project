@@ -74,6 +74,25 @@
         - Consider running tests on other binary class sets
         - Consider examining auxiliary genres and running binary test on most closely related top-genres
             - expected to see in diss, confusion matrix
+28/11/2022 Eighth Supervisor Meeting
+    - Notes:
+        - Presented results, discussed next steps
+        - Next, look at improving the model and dataset
+        - Look at output and set custom cutoff
+        - Research origin of database, how are top_genres decided (for diss discussion)
+        - Encouraged to explore using ResNet
+        - Definitely implement dropout layers and other techniques
+        - Look at ResNet and use as inspiration for current custom model (gives things to talk about in diss)
+        - Don't forget status report at end of semester
+12/12/2022 Ninth Supervisor Meeting
+    - Notes:
+        - Discussed end of semester report
+        - Outline Dissertation
+        - This is a novel piece of work -> good to highlight in diss
+        - Chris offered to help publish this work, very exciting offer
+        - Look at other literature, se what others have done, put my work into context
+        - Document process, choices, dissertation can balance out grade if project falls short
+        - Think of shape of dissertation, get stuff written down
 
 ***
 
