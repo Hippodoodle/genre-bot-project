@@ -16,7 +16,8 @@ from torch.utils.data import random_split
 DATA_DIR = "./data/fma_small_spect"
 DATA_DIR = "./data/fma_small_spect_dpi100"
 
-CLASSES = 2
+CLASSES = 8
+
 
 class Net(nn.Module):
     def __init__(self, l1=1024, l2=512):
@@ -185,26 +186,46 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
     data_dir = os.path.abspath(DATA_DIR)
     load_data(data_dir)
 
+    """
+    if num_samples == 1:
+            config = {
+                "l1": 1024,
+                "l2": 512,
+                "lr": 0.001,
+                "batch_size": 1
+            }
+        if num_samples == 1:
+            config = {
+                "l1": 64,
+                "l2": 64,
+                "lr": 0.001,
+                "batch_size": 2
+            }
+    """
     if num_samples == 1:
         config = {
-            "l1": 1024,
+            "l1": 128,
             "l2": 512,
             "lr": 0.001,
             "batch_size": 1
         }
     else:
         config = {
-            "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-            "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-            "lr": tune.loguniform(1e-4, 1e-1),
-            "batch_size": tune.choice([2, 4, 8, 16])
+            # "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+            # "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+            # "lr": tune.loguniform(1e-4, 1e-1),
+            # "batch_size": tune.choice([1, 2, 4, 8, 16])
+            "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
+            "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
+            "lr": tune.loguniform(1e-4, 1e-2),
+            "batch_size": tune.choice([1, 2, 4])
         }
 
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
         max_t=max_num_epochs,
-        grace_period=1,
+        grace_period=2,
         reduction_factor=2)
 
     reporter = CLIReporter(
@@ -244,6 +265,6 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
 if __name__ == "__main__":
     TUNE = False
     if TUNE:
-        main(num_samples=15, max_num_epochs=10, gpus_per_trial=1)
+        main(num_samples=20, max_num_epochs=10, gpus_per_trial=1)
     else:
         main()
