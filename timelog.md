@@ -114,3 +114,20 @@
 ### 21 Nov 2022
 
 * *2 hours* Re working code to be more organised and linted, adding comments for demonstration and easily accessible global variables for running tests
+
+### 27 Nov 2022
+* *1 hour* Trained hyperparameters and recorded results on binary choice case
+* *1 hour* Generated full dataset for further training and plan to implement multiple binary training cases
+
+### 4 Dec 2022
+* *3 hours* Ran tests on basic CNN for different binary training cases
+
+### 5-11 Dec 2022
+* *~5 hours* Was sick and overworked during this period, forgot to keep logs. Made small bits of progress in various areas
+
+### 12 Dec 2022
+* *1 hour* Started writing report
+
+### 15 Dec 2022
+* *2 hours* Finished writing status report
+* *1 hour* Cleaned up repo and made commits for long distance work over the holidays
