@@ -206,8 +206,8 @@ def main():
     # Load Metadata
     tracks = load_tracks('data/fma/data/fma_metadata/tracks.csv')
     print("Track Metadata Loaded Successfully")
-    genres = pd.read_csv('data/fma/data/fma_metadata/genres.csv', index_col=0)
-    print("Genre Metadata Loaded Successfully")
+    # genres = pd.read_csv('data/fma/data/fma_metadata/genres.csv', index_col=0)
+    # print("Genre Metadata Loaded Successfully")
 
     # Select Small Subset
     small = tracks[tracks['set', 'subset'] <= 'small']
@@ -242,19 +242,19 @@ def main():
     if not os.path.exists(SPECT_DIR):
         os.makedirs(SPECT_DIR)
     train_dir = os.path.join(SPECT_DIR, 'training')
-    validation_dir = os.path.join(SPECT_DIR, 'validation')
+    # validation_dir = os.path.join(SPECT_DIR, 'validation')
     test_dir = os.path.join(SPECT_DIR, 'test')
     if not os.path.exists(train_dir):
         os.makedirs(train_dir)
-    if not os.path.exists(validation_dir):
-        os.makedirs(validation_dir)
+    # if not os.path.exists(validation_dir):
+    #    os.makedirs(validation_dir)
     if not os.path.exists(test_dir):
         os.makedirs(test_dir)
     for g in genres_list:
         if not os.path.exists(os.path.join(train_dir, g)):
             os.makedirs(os.path.join(train_dir, g))
-        if not os.path.exists(os.path.join(validation_dir, g)):
-            os.makedirs(os.path.join(validation_dir, g))
+        # if not os.path.exists(os.path.join(validation_dir, g)):
+        #    os.makedirs(os.path.join(validation_dir, g))
         if not os.path.exists(os.path.join(test_dir, g)):
             os.makedirs(os.path.join(test_dir, g))
 
