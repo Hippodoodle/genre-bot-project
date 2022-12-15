@@ -90,7 +90,7 @@
         - Outline Dissertation
         - This is a novel piece of work -> good to highlight in diss
         - Chris offered to help publish this work, very exciting offer
-        - Look at other literature, se what others have done, put my work into context
+        - Look at other literature, see what others have done, put my work into context
         - Document process, choices, dissertation can balance out grade if project falls short
         - Think of shape of dissertation, get stuff written down
 
