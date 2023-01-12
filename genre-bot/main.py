@@ -1,6 +1,7 @@
 import os
 import time
 from functools import partial
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -10,6 +11,7 @@ import torchvision
 import torchvision.transforms as transforms
 from ray import tune
 from ray.tune import CLIReporter
+from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import random_split
 
@@ -241,7 +243,7 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
         scheduler=scheduler,
         progress_reporter=reporter)
 
-    best_trial = result.get_best_trial("loss", "min", "last")
+    best_trial: Trial = result.get_best_trial("loss", "min", "last")
     print("Best trial config: {}".format(best_trial.config))
     print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
     print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
@@ -254,7 +256,7 @@ def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
             best_trained_model = nn.parallel.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint_dir = best_trial.checkpoint.dir_or_data
+    best_checkpoint_dir: str | Path = best_trial.checkpoint.dir_or_data
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
