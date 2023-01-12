@@ -251,4 +251,7 @@ def main(fresh: bool = True, pair_experiment: bool = False):
 
 
 if __name__ == "__main__":
-    main()
+    start = time.time()
+    main(fresh=True, pair_experiment=True)
+    end = time.time()
+    print(f'Data generation took {end - start} seconds')
