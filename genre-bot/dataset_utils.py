@@ -151,54 +151,14 @@ def generate_data(path: str, genres: list[str], indices: list[int], tracks: pd.D
             audio_to_spectrogram(AUDIO_DIR, id, track_path)
 
 
-    # stuff 2
-    stft = np.abs(librosa.stft(x, n_fft=2048, hop_length=512))
-    mel = librosa.feature.melspectrogram(sr=sr, S=stft**2)
-    log_mel = librosa.db_to_amplitude(mel)
+def main(fresh: bool = True, pair_experiment: bool = False):
+    """Generates spectrogram dataset, stored by genre, from the small fma dataset
 
-    librosa.display.specshow(log_mel, sr=sr, hop_length=512, x_axis='time', y_axis='mel')
-    plt.show()
-
-    # stuff 3
-    mfcc = librosa.feature.mfcc(S=librosa.power_to_db(mel), n_mfcc=20)
-    mfcc = skl.preprocessing.StandardScaler().fit_transform(mfcc)
-    librosa.display.specshow(mfcc, sr=sr, x_axis='time')
-    plt.show()
-
-    y, sr = librosa.load(filename, sr=None, mono=True, duration=30)
-    librosa.feature.melspectrogram(y=y, sr=sr)
-
-    # Passing through arguments to the Mel filters
-    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128,
-                                       fmax=8000)
-
-    fig, ax = plt.subplots()
-    S_dB = librosa.power_to_db(S, ref=np.max)
-    img = librosa.display.specshow(S_dB, x_axis='time',
-                                   y_axis='mel', sr=sr,
-                                   fmax=8000, ax=ax)
-    fig.colorbar(img, ax=ax, format='%+2.0f dB')
-    ax.set(title='Mel-frequency spectrogram')
-    plt.show()
-
-
-def get_track_genre(track_id: int, tracks: pd.DataFrame) -> str:
-    return str(tracks.loc[track_id]['track', 'genre_top'])
-
-
-def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_str='small', ):
-
-    # Select Subset
-    subset = tracks[tracks['set', 'subset'] <= subset_str]
-    if subset.shape == (8000, 52):
-        print(f"Success {subset_str} subset selected")
-    else:
-        print("Error: Something wrong with the dataset (wrong shape)")
-
-    small_indices = small.index.to_list()
-
-
-def main():
+    Parameters
+    ----------
+    fresh : bool, optional
+        Fresh load of all the data if set to True, by default True
+    """
 
     # Load Metadata
     tracks = load_tracks('data/fma/data/fma_metadata/tracks.csv')
@@ -227,8 +187,17 @@ def main():
             genres_list.append(genre)
     print(f"All genres in Small: {genres_list} {GENRES == genres_list}")
 
-    # Limit genres for initial proof of concept
-    genres_list = ['Folk', 'Rock']
+    # Generate genre pairs for experiments
+    genre_sets: list[tuple[str, str]] | list[list[str]] = []
+    if pair_experiment:
+        for g1 in GENRES:
+            for g2 in GENRES:
+                if g1 < g2 and (g1, g2) not in genre_sets:
+                    genre_sets.append((g1, g2))
+                elif g1 > g2 and (g2, g1) not in genre_sets:
+                    genre_sets.append((g2, g1))
+    else:
+        genre_sets = [GENRES]
 
     # Make directories if they don't exist
     if not os.path.exists(SPECT_DIR):
