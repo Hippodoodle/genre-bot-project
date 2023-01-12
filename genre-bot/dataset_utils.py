@@ -223,17 +223,31 @@ def main(fresh: bool = True, pair_experiment: bool = False):
         if not os.path.exists(os.path.join(test_dir, g)):
             os.makedirs(os.path.join(test_dir, g))
 
+    # Iterate through experiment genre sets
+    for genre_set in genre_sets:
+
     # Load all tracks in the index list
-    fresh = True  # Fresh load of all the data if set to True
     for id in small_indices:
         track_split = str(tracks.loc[id]['set', 'split'])
+
+            # Merge validation split into training split
         if track_split == 'validation':
             track_split = 'training'
+
+            if len(genre_sets) != 1:
+                experiment_dir = os.path.join(SPECT_DIR, genre_set[0] + '_' + genre_set[1])
+            else:
+                experiment_dir = SPECT_DIR
+
+            # Get track genre and path
         track_genre = get_track_genre(id, tracks)
-        track_path = os.path.join(SPECT_DIR, track_split, track_genre)
-        if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genres_list:
-            print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
-            audio_to_spectrogram(AUDIO_DIR, id, track_path)
+            track_path = os.path.join(experiment_dir, track_split, track_genre)
+
+            # Save a track if we want to save it and it has the desired genre
+            if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genre_set:
+                #print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
+                audio_to_spectrogram(AUDIO_DIR, id, track_path)  # TODO: optimise to not load the same song twice
+        print(f"Generated data for {genre_set} set")
 
 
 if __name__ == "__main__":
