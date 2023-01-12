@@ -13,7 +13,7 @@ from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
-from torch.utils.data import random_split
+from torch.utils.data import DataLoader, random_split
 
 DATA_DIR = "./data/fma_small_spect"
 DATA_DIR = "./data/fma_small_spect_dpi100"
@@ -101,12 +101,12 @@ def train_fma(config, checkpoint_dir=None, data_dir=DATA_DIR):
     test_abs = int(len(trainset) * 0.8)
     train_subset, validation_subset = random_split(trainset, [test_abs, len(trainset) - test_abs])
 
-    trainloader = torch.utils.data.DataLoader(
+    trainloader = DataLoader(
         train_subset,
         batch_size=int(config["batch_size"]),
         shuffle=True,
         num_workers=8)
-    validationloader = torch.utils.data.DataLoader(
+    validationloader = DataLoader(
         validation_subset,
         batch_size=int(config["batch_size"]),
         shuffle=True,
@@ -168,7 +168,7 @@ def train_fma(config, checkpoint_dir=None, data_dir=DATA_DIR):
 def test_accuracy(net, device="cpu"):
     trainset, testset = load_data()
 
-    testloader = torch.utils.data.DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
+    testloader = DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
     correct = 0
     total = 0
