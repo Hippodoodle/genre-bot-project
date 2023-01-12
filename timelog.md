@@ -140,3 +140,6 @@
 ### 11 Jan 2023
 * *4 hours* Finished script to generate binary choice experiment data
 * *3.3 hours* Ran data generation script
+
+### 12 Jan 2023
+* *1 hour* Wrote commit messages and organised github repo
