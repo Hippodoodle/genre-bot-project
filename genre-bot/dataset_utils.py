@@ -202,13 +202,21 @@ def main(fresh: bool = True, pair_experiment: bool = False):
     # Make directories if they don't exist
     if not os.path.exists(SPECT_DIR):
         os.makedirs(SPECT_DIR)
-    train_dir = os.path.join(SPECT_DIR, 'training')
-    # validation_dir = os.path.join(SPECT_DIR, 'validation')
-    test_dir = os.path.join(SPECT_DIR, 'test')
+
+    for set in genre_sets:
+        if len(genre_sets) > 1:
+            experiment_dir = os.path.join(SPECT_DIR, set[0] + '_' + set[1])
+        else:
+            experiment_dir = SPECT_DIR
+
+        train_dir = os.path.join(experiment_dir, 'training')
+        test_dir = os.path.join(experiment_dir, 'test')
+
     if not os.path.exists(train_dir):
         os.makedirs(train_dir)
     if not os.path.exists(test_dir):
         os.makedirs(test_dir)
+
     for g in genres_list:
         if not os.path.exists(os.path.join(train_dir, g)):
             os.makedirs(os.path.join(train_dir, g))
