@@ -131,3 +131,12 @@
 ### 15 Dec 2022
 * *2 hours* Finished writing status report
 * *1 hour* Cleaned up repo and made commits for long distance work over the holidays
+
+### 9 Jan 2023
+* *2 hours* Wrote script to generate genre pair directories for experiment
+* *1 hour* Organised github issues to keep track of progress and organise commits
+* *2 hours* Researched input transformations
+
+### 11 Jan 2023
+* *4 hours* Finished script to generate binary choice experiment data
+* *3.3 hours* Ran data generation script
