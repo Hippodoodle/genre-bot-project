@@ -212,27 +212,27 @@ def main(fresh: bool = True, pair_experiment: bool = False):
         train_dir = os.path.join(experiment_dir, 'training')
         test_dir = os.path.join(experiment_dir, 'test')
 
-    if not os.path.exists(train_dir):
-        os.makedirs(train_dir)
-    if not os.path.exists(test_dir):
-        os.makedirs(test_dir)
+        if not os.path.exists(train_dir):
+            os.makedirs(train_dir)
+        if not os.path.exists(test_dir):
+            os.makedirs(test_dir)
 
-    for g in genres_list:
-        if not os.path.exists(os.path.join(train_dir, g)):
-            os.makedirs(os.path.join(train_dir, g))
-        if not os.path.exists(os.path.join(test_dir, g)):
-            os.makedirs(os.path.join(test_dir, g))
+        for g in genres_list:
+            if not os.path.exists(os.path.join(train_dir, g)):
+                os.makedirs(os.path.join(train_dir, g))
+            if not os.path.exists(os.path.join(test_dir, g)):
+                os.makedirs(os.path.join(test_dir, g))
 
     # Iterate through experiment genre sets
     for genre_set in genre_sets:
 
-    # Load all tracks in the index list
-    for id in small_indices:
-        track_split = str(tracks.loc[id]['set', 'split'])
+        # Load all tracks in the index list
+        for id in small_indices:
+            track_split = str(tracks.loc[id]['set', 'split'])
 
             # Merge validation split into training split
-        if track_split == 'validation':
-            track_split = 'training'
+            if track_split == 'validation':
+                track_split = 'training'
 
             if len(genre_sets) != 1:
                 experiment_dir = os.path.join(SPECT_DIR, genre_set[0] + '_' + genre_set[1])
@@ -240,7 +240,7 @@ def main(fresh: bool = True, pair_experiment: bool = False):
                 experiment_dir = SPECT_DIR
 
             # Get track genre and path
-        track_genre = get_track_genre(id, tracks)
+            track_genre = get_track_genre(id, tracks)
             track_path = os.path.join(experiment_dir, track_split, track_genre)
 
             # Save a track if we want to save it and it has the desired genre
