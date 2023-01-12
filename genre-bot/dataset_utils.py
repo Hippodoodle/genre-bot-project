@@ -26,11 +26,11 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import shuffle
 
 AUDIO_DIR = "./data/fma/data/fma_small"
-SPECT_DIR = "./data/fma_small_spect_dpi900"
-SPECT_DIR = "./data/fma_small_spect_dpi200"
-SPECT_DIR = "./data/fma_small_spect_dpi100"
+SPECT_DIR = "./data/fma_small_spect_dpi100_binary_choice"
 
 DPI = 100
+
+GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
 
 matplotlib.use("Agg")
 
@@ -44,6 +44,10 @@ def get_spect_path(spect_dir, track_id):
     tid_str = '{:06d}'.format(track_id)
     spect_dir = os.path.join(spect_dir, )
     return os.path.join(spect_dir, tid_str + '.png')
+
+
+def get_track_genre(track_id: int, tracks: pd.DataFrame) -> str:
+    return str(tracks.loc[track_id]['track', 'genre_top'])
 
 
 def get_track_id_from_path(track_path):
@@ -115,44 +119,37 @@ def load_tracks(filepath):
     return tracks
 
 
-def testing(tracks, genres):
+def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_str='small', ):
 
-    # Select Small Subset
-    small = tracks[tracks['set', 'subset'] <= 'small']
-    if small.shape == (8000, 52):
-        print("Small Subset Selected Successfully")
+    # Select Subset
+    subset = tracks[tracks['set', 'subset'] <= subset_str]
+    if subset.shape == (8000, 52):
+        print(f"Success {subset_str} subset selected")
     else:
         print("Error: Something wrong with the dataset (wrong shape)")
 
-    print(small)
-    print("aaaa")
-    print(small["track", "tags"])
-    print(small["track", "tags"])
+    small_indices = small.index.to_list()
 
-    # Select Genres
-    print('{} top-level genres'.format(len(genres['top_level'].unique())))
-    print(genres.loc[genres['top_level'].unique()].sort_values('#tracks', ascending=False))
 
-    print(genres.sort_values('#tracks').head(10))
+def generate_data(path: str, genres: list[str], indices: list[int], tracks: pd.DataFrame, fresh: bool):
 
-    # Load Audio
-    filename = get_audio_path(AUDIO_DIR, 2)
+    # Load all tracks in the index list
+    for id in indices:
+        track_split = str(tracks.loc[id]['set', 'split'])
 
-    print('File: {}'.format(filename))
+        # Merge validation split into training split
+        if track_split == 'validation':
+            track_split = 'training'
 
-    x, sr = librosa.load(filename, sr=None, mono=True, duration=30)
-    print('Duration: {:.2f}s, {} samples'.format(x.shape[-1] / sr, x.size))
+        # Get track genre and path
+        track_genre = get_track_genre(id, tracks)
+        track_path = os.path.join(SPECT_DIR, track_split, track_genre)
 
-    start, end = 7, 17
-    # Librosa Stuff
-    librosa.display.waveshow(x, sr=sr, alpha=0.5)
-    plt.vlines([start, end], -1, 1)
+        # Save a track if we want to save it and it has the desired genre
+        if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genres:
+            print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
+            audio_to_spectrogram(AUDIO_DIR, id, track_path)
 
-    start = len(x) // 2
-    plt.figure()
-    plt.plot(x[start:start+2000])
-    plt.ylim((-1, 1))
-    plt.show()
 
     # stuff 2
     stft = np.abs(librosa.stft(x, n_fft=2048, hop_length=512))
@@ -206,8 +203,6 @@ def main():
     # Load Metadata
     tracks = load_tracks('data/fma/data/fma_metadata/tracks.csv')
     print("Track Metadata Loaded Successfully")
-    # genres = pd.read_csv('data/fma/data/fma_metadata/genres.csv', index_col=0)
-    # print("Genre Metadata Loaded Successfully")
 
     # Select Small Subset
     small = tracks[tracks['set', 'subset'] <= 'small']
@@ -222,12 +217,9 @@ def main():
     test = tracks[(tracks['set', 'split'] == 'test') & (tracks['set', 'subset'] <= 'small')]
 
     print(f"Train: {train.shape}, Val: {val.shape}, Test: {test.shape}")  # TODO: debug
-    # print(f"Train: {train.index}, Val: {val.index}, Test: {test.index}")  # TODO: debug
 
     small_indices = small.index.to_list()
-    # print(f"Small Index: {small_indices}, {len(small_indices)}")
 
-    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
     genres_list = []
     for id in small_indices:
         genre = str(tracks.loc[id]['track', 'genre_top'])
@@ -246,15 +238,11 @@ def main():
     test_dir = os.path.join(SPECT_DIR, 'test')
     if not os.path.exists(train_dir):
         os.makedirs(train_dir)
-    # if not os.path.exists(validation_dir):
-    #    os.makedirs(validation_dir)
     if not os.path.exists(test_dir):
         os.makedirs(test_dir)
     for g in genres_list:
         if not os.path.exists(os.path.join(train_dir, g)):
             os.makedirs(os.path.join(train_dir, g))
-        # if not os.path.exists(os.path.join(validation_dir, g)):
-        #    os.makedirs(os.path.join(validation_dir, g))
         if not os.path.exists(os.path.join(test_dir, g)):
             os.makedirs(os.path.join(test_dir, g))
 
