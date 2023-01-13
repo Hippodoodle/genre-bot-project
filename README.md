@@ -93,6 +93,16 @@
         - Look at other literature, see what others have done, put my work into context
         - Document process, choices, dissertation can balance out grade if project falls short
         - Think of shape of dissertation, get stuff written down
+13/01/2023 Tenth Supervisor Meeting
+    - Notes:
+        - Train model multiple times since trianing might be stochastic
+        - Discuss the range of training accuracy in diss
+        - Train 1 binary choice model twice
+        - Consider trimming number of genres (3 first, then 5)
+        - For diss, definitely talk about what's been done and how my work follows/differs from it
+        - This diss: using image classification cnn model on spectrograms to classify song genre
+        - Use ResNet, chop off the final layer of pre-trained model, and retrain the classification top layer -> Transfer learning
+        - Tutorials lookup: transfer learning on resnet
 
 ***
 
