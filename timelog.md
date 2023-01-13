@@ -144,3 +144,4 @@
 ### 12 Jan 2023
 * *1 hour* Wrote commit messages and organised github repo
 * *1 hour* Various tweaks to main.py and research into ray library
+* *4 hours* Various fixes to dataset_utils.py and data generation
