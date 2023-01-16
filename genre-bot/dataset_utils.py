@@ -60,7 +60,7 @@ def track_spectrogram_exists(spect_dir, track_id):
     return os.path.exists(get_spect_path(spect_dir, track_id))
 
 
-def audio_to_spectrogram(audio_dir, track_id, spect_dir):
+def audio_to_spectrogram(audio_dir: str | Path, track_id: int, spect_dir: str | Path):
 
     filename = get_audio_path(audio_dir, track_id)
     try:
@@ -70,13 +70,8 @@ def audio_to_spectrogram(audio_dir, track_id, spect_dir):
 
     # Passing through arguments to the Mel filters
     S = librosa.feature.melspectrogram(y=y, sr=sr)
-    plt.axis('off')
-    plt.gca().axis('off')
-    plt.margins(0, 0)
     fig, ax = plt.subplots()
-    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
-    plt.gca().xaxis.set_major_locator(plt.NullLocator())
-    plt.gca().yaxis.set_major_locator(plt.NullLocator())
+    ax.axis('off')
     S_dB = librosa.power_to_db(S, ref=np.max)
     librosa.display.specshow(S_dB, sr=sr, fmax=8000, ax=ax)
     fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),  # TODO: remove white border
