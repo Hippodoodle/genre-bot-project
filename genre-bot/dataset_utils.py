@@ -116,6 +116,7 @@ def load_tracks(filepath):
     return tracks
 
 
+"""
 def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_str='small', ):
 
     # Select Subset
@@ -126,8 +127,9 @@ def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_s
         print("Error: Something wrong with the dataset (wrong shape)")
 
     small_indices = small.index.to_list()
+"""
 
-
+"""
 def generate_data(path: str, genres: list[str], indices: list[int], tracks: pd.DataFrame, fresh: bool):
 
     # Load all tracks in the index list
@@ -146,6 +148,7 @@ def generate_data(path: str, genres: list[str], indices: list[int], tracks: pd.D
         if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genres:
             print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
             audio_to_spectrogram(AUDIO_DIR, id, track_path)
+"""
 
 
 def main(fresh: bool = True, pair_experiment: bool = False):
