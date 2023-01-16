@@ -214,7 +214,7 @@ def main(fresh: bool = True, pair_experiment: bool = False):
         if not os.path.exists(test_dir):
             os.makedirs(test_dir)
 
-        for g in genres_list:
+        for g in set:
             if not os.path.exists(os.path.join(train_dir, g)):
                 os.makedirs(os.path.join(train_dir, g))
             if not os.path.exists(os.path.join(test_dir, g)):
