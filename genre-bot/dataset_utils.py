@@ -30,6 +30,8 @@ SPECT_DIR = "./data/fma_small_spect_dpi100_binary_choice"
 
 DPI = 100
 
+GENRES = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
+GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
 GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
 
 matplotlib.use("Agg")
