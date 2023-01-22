@@ -165,8 +165,8 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
     print(f'Training took {end - start} seconds')
 
 
-def test_accuracy(net, device="cpu"):
-    trainset, testset = load_data()
+def test_accuracy(net, device: str = "cpu", data_dir: str | Path = DATA_DIR):
+    trainset, testset = load_data(data_dir)
 
     testloader = DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
