@@ -10,7 +10,7 @@ import torch.optim as optim
 import torchvision
 import torchvision.transforms as transforms
 from ray import tune
-from ray.tune import CLIReporter
+from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader, random_split
@@ -187,42 +187,17 @@ def test_accuracy(net, device: str = "cpu", data_dir: str | Path = DATA_DIR):
 def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None =  None):
 
     data_dir = os.path.abspath(DATA_DIR)
-    load_data(data_dir)
 
-    """
-    if num_samples == 1:
-            config = {
-                "l1": 1024,
-                "l2": 512,
-                "lr": 0.001,
-                "batch_size": 1
-            }
-        if num_samples == 1:
-            config = {
-                "l1": 64,
-                "l2": 64,
-                "lr": 0.001,
-                "batch_size": 2
-            }
-    """
-    if num_samples == 1:
-        config = {
-            "l1": 128,
-            "l2": 512,
-            "lr": 0.001,
-            "batch_size": 1
-        }
-    else:
-        config = {
-            # "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-            # "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
-            # "lr": tune.loguniform(1e-4, 1e-1),
-            # "batch_size": tune.choice([1, 2, 4, 8, 16])
-            "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
-            "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
-            "lr": tune.loguniform(1e-4, 1e-2),
-            "batch_size": tune.choice([1, 2, 4])
-        }
+    config = {
+        # "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+        # "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
+        # "lr": tune.loguniform(1e-4, 1e-1),
+        # "batch_size": tune.choice([1, 2, 4, 8, 16])
+        "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
+        "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
+        "lr": tune.loguniform(1e-4, 1e-2),
+        "batch_size": tune.choice([1, 2, 4])
+    }
 
     scheduler = ASHAScheduler(
         metric="loss",
@@ -232,9 +207,9 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
         reduction_factor=2)
 
     reporter = CLIReporter(
-        # parameter_columns=["l1", "l2", "lr", "batch_size"],
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=20)
+        max_report_frequency=20,
+        print_intermediate_tables=False)
 
     result: ExperimentAnalysis = tune.run(
         partial(train_fma, data_dir=data_dir),
@@ -265,11 +240,169 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
     print("Best trial test set accuracy: {}".format(test_acc))
 
 
-if __name__ == "__main__":
+def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None = None) -> str:
+
+    DATA_DIR = "./data/fma_small_spect_dpi100_binary_choice"
+
+    data_dir = None
+
+    for filename in os.listdir(DATA_DIR):
+        if g1.lower() in filename.lower() and g2.lower() in filename.lower():
+            data_dir = os.path.abspath(os.path.join(DATA_DIR, filename))
+
+    if data_dir is None:
+        raise
+
+    config = {
+        "l1": 128,
+        "l2": 512,
+        "lr": 0.001,
+        "batch_size": 1
+    }
+
+    scheduler = ASHAScheduler(
+        metric="loss",
+        mode="min",
+        max_t=max_num_epochs,
+        grace_period=2,
+        reduction_factor=2)
+
+    reporter = CLIReporter(
+        metric_columns=["loss", "accuracy", "training_iteration"],
+        max_report_frequency=600,
+        print_intermediate_tables=False)
+
+    result: ExperimentAnalysis = tune.run(
+        partial(train_fma, data_dir=data_dir),
+        resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
+        config=config,
+        num_samples=num_samples,
+        scheduler=scheduler,
+        progress_reporter=reporter,
+        local_dir=os.path.join(RESULT_DIR, os.path.basename(DATA_DIR), os.path.basename(data_dir)),
+        verbose=0)
+
+    best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
+    print("Best trial config: {}".format(best_trial.config))
+    print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+    print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
+    best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda:0"
+        if gpus_per_trial > 1:
+            best_trained_model = nn.parallel.DataParallel(best_trained_model)
+    best_trained_model.to(device)
+
+    best_checkpoint_dir: str | Path = best_trial.checkpoint.dir_or_data  # type: ignore
+    model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
+    best_trained_model.load_state_dict(model_state)
+
+    test_acc = test_accuracy(best_trained_model, device, data_dir)
+    print("Best trial test set accuracy: {}".format(test_acc))
+
+    # Output run data as csv string
+    output_str = f"{g1},{g2},{test_acc}"
+
+    return output_str
+
+
+def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None = None):
+
+    data_dir = os.path.abspath(DATA_DIR)
+
+    config = {
+        "l1": 128,
+        "l2": 512,
+        "lr": 0.001,
+        "batch_size": 1
+    }
+
+    scheduler = ASHAScheduler(
+        metric="loss",
+        mode="min",
+        max_t=max_num_epochs,
+        grace_period=2,
+        reduction_factor=2)
+
+    reporter = CLIReporter(
+        metric_columns=["loss", "accuracy", "training_iteration"],
+        max_report_frequency=20,
+        print_intermediate_tables=False)
+
+    result: ExperimentAnalysis = tune.run(
+        partial(train_fma, data_dir=data_dir),
+        resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
+        config=config,
+        num_samples=num_samples,
+        scheduler=scheduler,
+        progress_reporter=reporter)
+
+    best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
+    print("Best trial config: {}".format(best_trial.config))
+    print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
+    print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
+
+    best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda:0"
+        if gpus_per_trial > 1:
+            best_trained_model = nn.parallel.DataParallel(best_trained_model)
+    best_trained_model.to(device)
+
+    best_checkpoint_dir: str | Path = best_trial.checkpoint.dir_or_data  # type: ignore
+    model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
+    best_trained_model.load_state_dict(model_state)
+
+    test_acc = test_accuracy(best_trained_model, device)
+    print("Best trial test set accuracy: {}".format(test_acc))
+
+
+def main():
+
     TUNE = False
+    EXPERIMENT = True
     global classes
+
+    MODEL_DIR = "C:/Users/thoma/ray_results/train_fma_2023-01-16_19-17-07"
+    MODEL_DIR = None
+
+    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
+    GENRES = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
+
     if TUNE:
         classes = 8
+        tune_run(num_samples=20, max_num_epochs=10, gpus_per_trial=1, checkpoint=MODEL_DIR)
+
+    elif EXPERIMENT:
+        classes = 2
+        experiment_csv = ""
+        genre_pairs = []
+
+        for g1 in GENRES:
+            for g2 in GENRES:
+                if g1 != g2 and not ([g1, g2] in genre_pairs or [g2, g1] in genre_pairs):
+                    genre_pairs.append([g1, g2])
+
+        for pair in genre_pairs:
+            g1 = pair[0]
+            g2 = pair[1]
+            print(f"Current experiment: {g1}, {g2}")
+            experiment_csv += experiment_run(g1, g2, max_num_epochs=10, checkpoint=MODEL_DIR) + "\n"
+            print("Output:\n" + experiment_csv)
+
+        print("Final output:\n" + experiment_csv)
+        f = open("experiment_output.csv", "w")
+        f.write(experiment_csv)
+        f.close()
+
     else:
         classes = 8
-        main()
+        simple_run(max_num_epochs=2, checkpoint=MODEL_DIR)
+
+
+if __name__ == "__main__":
+    main()
