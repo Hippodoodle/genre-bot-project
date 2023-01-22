@@ -236,7 +236,7 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
         metric_columns=["loss", "accuracy", "training_iteration"],
         max_report_frequency=20)
 
-    result = tune.run(
+    result: ExperimentAnalysis = tune.run(
         partial(train_fma, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
@@ -244,7 +244,7 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
         scheduler=scheduler,
         progress_reporter=reporter)
 
-    best_trial: Trial = result.get_best_trial("loss", "min", "last")
+    best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
     print("Best trial config: {}".format(best_trial.config))
     print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
     print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
@@ -257,7 +257,7 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
             best_trained_model = nn.parallel.DataParallel(best_trained_model)
     best_trained_model.to(device)
 
-    best_checkpoint_dir: str | Path = best_trial.checkpoint.dir_or_data
+    best_checkpoint_dir: str | Path = best_trial.checkpoint.dir_or_data  # type: ignore
     model_state, optimizer_state = torch.load(os.path.join(best_checkpoint_dir, "checkpoint"))
     best_trained_model.load_state_dict(model_state)
 
