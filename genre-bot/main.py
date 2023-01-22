@@ -22,7 +22,7 @@ CLASSES = 8
 
 
 class Net(nn.Module):
-    def __init__(self, l1=1024, l2=512):
+    def __init__(self, l1: int = 1024, l2: int = 512):
         super().__init__()
         self.network = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -55,7 +55,7 @@ class Net(nn.Module):
         return self.network(x)
 
 
-def load_data(data_dir=DATA_DIR):
+def load_data(data_dir: str | Path = DATA_DIR):
     transform = transforms.Compose(
         [
             transforms.Resize((256, 256)),
@@ -71,7 +71,7 @@ def load_data(data_dir=DATA_DIR):
     return trainset, testset
 
 
-def train_fma(config, checkpoint_dir=None, data_dir=DATA_DIR):
+def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | Path = DATA_DIR):
 
     start = time.time()
 
@@ -184,7 +184,8 @@ def test_accuracy(net, device="cpu"):
     return correct / total
 
 
-def main(num_samples=1, max_num_epochs=10, gpus_per_trial=1):
+def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None =  None):
+
     data_dir = os.path.abspath(DATA_DIR)
     load_data(data_dir)
 
