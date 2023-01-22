@@ -103,6 +103,13 @@
         - This diss: using image classification cnn model on spectrograms to classify song genre
         - Use ResNet, chop off the final layer of pre-trained model, and retrain the classification top layer -> Transfer learning
         - Tutorials lookup: transfer learning on resnet
+17/01/2023 Eleventh Supervisor Meeting
+    - Notes:
+        - Have a look at F1 score for confusion matrix metric
+        - F1 looks at rate of false positives and false negatives
+        - First look at accuracy, but definitely use F1 score for analysis
+        - Number of final outputs does matter, make sure code changes final layer to have 3 classes
+        - Store results in a csv file, that way can be imported into exel easily
 
 ***
 
@@ -129,6 +136,12 @@ https://paperswithcode.com/dataset/fma
 https://github.com/mdeff/fma
 https://librosa.org/doc/main/generated/librosa.feature.melspectrogram.html
 https://pytorch.org/docs/stable/notes/faq.html
+https://pytorch.org/tutorials/beginner/saving_loading_models.html
+https://docs.ray.io/en/latest/tune/api_docs/reporters.html#clireporter
+https://medium.com/analytics-vidhya/implementing-cnn-in-pytorch-with-custom-dataset-and-transfer-learning-1864daac14cc
+https://towardsdatascience.com/how-to-apply-a-cnn-from-pytorch-to-your-images-18515416bba1
+https://discuss.pytorch.org/t/cnn-input-image-size-formula/27954
+https://stackoverflow.com/questions/66488807/pytorch-model-input-shape/66562064#66562064
 
 
 ***
