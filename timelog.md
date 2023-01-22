@@ -145,3 +145,12 @@
 * *1 hour* Wrote commit messages and organised github repo
 * *1 hour* Various tweaks to main.py and research into ray library
 * *4 hours* Various fixes to dataset_utils.py and data generation
+
+### 16 Jan2023
+* *2 hours* Research into rayTune CLIReporter class
+* *7 hours* Wrote code for running binary choice experiment training and refactored a lot of code
+
+### 18 Jan2023
+* *4 hours* Wrote code to finish up experiment_run() method and output data to csv file
+* *2 hours* Fixed various bugs
+* *1 hour* Trained first experiment on limited set of 3 genres
