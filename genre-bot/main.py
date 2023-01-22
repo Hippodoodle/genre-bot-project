@@ -15,10 +15,9 @@ from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader, random_split
 
-DATA_DIR = "./data/fma_small_spect"
-DATA_DIR = "./data/fma_small_spect_dpi100"
 
-CLASSES = 8
+DATA_DIR = "./data/fma_small_spect_dpi100"
+RESULT_DIR = "./result/"
 
 
 class Net(nn.Module):
@@ -48,7 +47,7 @@ class Net(nn.Module):
             nn.ReLU(),
             nn.Linear(l1, l2),
             nn.ReLU(),
-            nn.Linear(l2, CLASSES)
+            nn.Linear(l2, classes)
         )
 
     def forward(self, x):
@@ -86,6 +85,7 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
     # Assuming that we are on a CUDA machine, this should print a CUDA device:
     print(f"Using {device} device")
     print(net)
+    print(classes)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
@@ -267,7 +267,9 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
 
 if __name__ == "__main__":
     TUNE = False
+    global classes
     if TUNE:
-        main(num_samples=20, max_num_epochs=10, gpus_per_trial=1)
+        classes = 8
     else:
+        classes = 8
         main()
