@@ -157,3 +157,6 @@
 
 ### 21 Jan 2023
 * *3 hours* Wrote more code to main.py
+
+### 23 Jan 2023
+* *6 hours* Wrote code to validate dataset
