@@ -17,7 +17,7 @@ from torch.utils.data import DataLoader, random_split
 
 
 DATA_DIR = "./data/fma_small_spect_dpi100"
-RESULT_DIR = "./result/"
+RESULT_DIR = "./results/"
 
 
 class Net(nn.Module):
@@ -253,6 +253,8 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
     if data_dir is None:
         raise
 
+    local_dir = os.path.join(RESULT_DIR, f"experiment_{len(genres)}_genres", os.path.basename(data_dir))
+
     config = {
         "l1": 128,
         "l2": 512,
@@ -279,7 +281,7 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
         num_samples=num_samples,
         scheduler=scheduler,
         progress_reporter=reporter,
-        local_dir=os.path.join(RESULT_DIR, os.path.basename(DATA_DIR), os.path.basename(data_dir)),
+        local_dir=local_dir,
         verbose=0)
 
     best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
@@ -365,13 +367,14 @@ def main():
     TUNE = False
     EXPERIMENT = True
     global classes
+    global genres
 
     MODEL_DIR = "C:/Users/thoma/ray_results/train_fma_2023-01-16_19-17-07"
     MODEL_DIR = None
 
-    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
-    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
-    GENRES = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
+    genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+    genres = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
+    genres = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
 
     if TUNE:
         classes = 8
@@ -382,9 +385,9 @@ def main():
         experiment_csv = ""
         genre_pairs = []
 
-        for g1 in GENRES:
-            for g2 in GENRES:
-                if g1 != g2 and not ([g1, g2] in genre_pairs or [g2, g1] in genre_pairs):
+        for g1 in genres:
+            for g2 in genres:
+                if g1 < g2 and not ([g1, g2] in genre_pairs or [g2, g1] in genre_pairs):
                     genre_pairs.append([g1, g2])
 
         for pair in genre_pairs:
@@ -395,7 +398,7 @@ def main():
             print("Output:\n" + experiment_csv)
 
         print("Final output:\n" + experiment_csv)
-        f = open("experiment_output.csv", "w")
+        f = open(os.path.join(RESULT_DIR, "experiment_output.csv"), "w")
         f.write(experiment_csv)
         f.close()
 
