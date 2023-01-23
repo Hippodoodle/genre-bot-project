@@ -159,6 +159,8 @@ def main(fresh: bool = True, pair_experiment: bool = False):
     ----------
     fresh : bool, optional
         Fresh load of all the data if set to True, by default True
+    pair_experiment : bool, optional
+        Generate datasets for binary choice experiments if set to True, by default False
     """
 
     # Load Metadata
