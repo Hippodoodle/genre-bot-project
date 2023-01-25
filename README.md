@@ -110,6 +110,22 @@
         - First look at accuracy, but definitely use F1 score for analysis
         - Number of final outputs does matter, make sure code changes final layer to have 3 classes
         - Store results in a csv file, that way can be imported into exel easily
+24/01/2023 Twelth Supervisor Meeting
+    - Notes:
+        - Presented experimental results
+        - run experiment on full 8 genres
+        - Would be good to show wrong spectrograms predictions in diss
+        - Mention that some songs are corrupted so dataset is 899 instead of 900 (talk about in diss)
+        - Do simple_run on 3 and 5 genre sets to compare to 36% chance on the 8 genre model
+            -> could 
+            -> 36% is quite a lot better than random chance
+            -> what are the other things to do to improve the model
+        - Get dissertation started!
+        - comparing to off the shelf model is the logical next step (ResNet or AlexNet)
+            -> might not be needed since the problem is quite constrained
+            -> might not be a lot better than the shallow model, they are trained for 1000s of classes
+        - potentially create experiment to comapre model depths on 8 genre set
+            -> remove layers of model and compare performance (perhaps look at resnet/alexnet and use techniques from them)
 
 ***
 
