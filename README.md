@@ -126,6 +126,19 @@
             -> might not be a lot better than the shallow model, they are trained for 1000s of classes
         - potentially create experiment to comapre model depths on 8 genre set
             -> remove layers of model and compare performance (perhaps look at resnet/alexnet and use techniques from them)
+31/01/2023 Thirteenth Supervisor Meeting
+    - Notes:
+        - Consider using different splits for training/test data sets on worst performing binary tests (see emails from Chris)
+        - Check balance of training and validation set (could be causing issues)
+        - Create full confusion matrix for 8 genres
+        - In diss:
+            - tell a story
+            - development of early model, learning ML, hyperperamter tuning
+            - idea of using image classification on spectrograms  **here
+            - choosing the dataset
+            - present results
+            - early on, present work done by other people (how they do it, what they've done, what I am trying to do)
+            - explore non neural network solutions (SVMs good for music for example) -> link back to **here
 
 ***
 
