@@ -161,3 +161,6 @@
 ### 23 Jan 2023
 * *6 hours* Wrote code to validate dataset
 * *4 hours* Ran experiment on 5 genre set
+
+### 2 Feb 2023
+* *6 hours* Wrote python script to load trained models and evaluate them
