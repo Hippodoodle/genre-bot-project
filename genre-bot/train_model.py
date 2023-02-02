@@ -18,10 +18,11 @@ from torch.utils.data import DataLoader, random_split
 
 DATA_DIR = "./data/fma_small_spect_dpi100"
 RESULT_DIR = "./results/"
+CLASSES = 2
 
 
 class Net(nn.Module):
-    def __init__(self, l1: int = 1024, l2: int = 512):
+    def __init__(self, l1: int = 1024, l2: int = 512, classes: int = CLASSES):
         super().__init__()
         self.network = nn.Sequential(
             nn.Conv2d(3, 32, kernel_size=3, padding=1),
@@ -366,7 +367,7 @@ def main():
 
     TUNE = False
     EXPERIMENT = True
-    global classes
+    global CLASSES
     global genres
 
     MODEL_DIR = "C:/Users/thoma/ray_results/train_fma_2023-01-16_19-17-07"
@@ -374,14 +375,14 @@ def main():
 
     genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
     genres = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
-    genres = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
+    #genres = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
 
     if TUNE:
-        classes = 8
+        CLASSES = 8
         tune_run(num_samples=20, max_num_epochs=10, gpus_per_trial=1, checkpoint=MODEL_DIR)
 
     elif EXPERIMENT:
-        classes = 2
+        CLASSES = 2
         experiment_csv = ""
         genre_pairs = []
 
@@ -403,7 +404,7 @@ def main():
         f.close()
 
     else:
-        classes = 8
+        CLASSES = 8
         simple_run(max_num_epochs=2, checkpoint=MODEL_DIR)
 
 
