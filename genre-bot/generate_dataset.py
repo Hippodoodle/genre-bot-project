@@ -27,7 +27,6 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.utils import shuffle
 
 AUDIO_DIR = "./data/fma/data/fma_small"
-SPECT_DIR = "./data/fma_small_spect_dpi100_binary_choice"
 
 DPI = 100
 
@@ -202,6 +201,12 @@ def main(fresh: bool = True, pair_experiment: bool = False):
     else:
         genre_sets = [GENRES]
 
+    global SPECT_DIR
+    if pair_experiment:
+        SPECT_DIR = "./data/fma_small_spect_dpi100_binary_choice"
+    else:
+        SPECT_DIR = "./data/fma_small_spect_dpi100"
+
     # Make directories if they don't exist
     if not os.path.exists(SPECT_DIR):
         os.makedirs(SPECT_DIR)
@@ -255,6 +260,6 @@ def main(fresh: bool = True, pair_experiment: bool = False):
 
 if __name__ == "__main__":
     start = time.time()
-    main(fresh=True, pair_experiment=True)
+    main(fresh=True, pair_experiment=False)
     end = time.time()
     print(f'Data generation took {end - start} seconds')
