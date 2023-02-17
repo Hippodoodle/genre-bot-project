@@ -139,6 +139,16 @@
             - present results
             - early on, present work done by other people (how they do it, what they've done, what I am trying to do)
             - explore non neural network solutions (SVMs good for music for example) -> link back to **here
+07/02/2023 Fourteenth Supervisor Meeting
+    - Notes:
+        - Presented results
+        - Suggested lr scheduler
+        - Does look like there is a set of optimal hyperparameters
+        - Quick look at genres that often misclassify
+        - Discussed genre labels, international is a bad label -> different countries have different styles, explains poor performance
+        - 8 way confusion matrix reinforces the folk-instrumental confusion, reassuring that results are congruent
+        - Use a different confusion matrix for each model -> if concerned about page space, can put matrices in the appendix
+        - Diss probably won't go far enough for publication, but could be handed on to a master's student to carry on research
 
 ***
 
@@ -171,6 +181,9 @@ https://medium.com/analytics-vidhya/implementing-cnn-in-pytorch-with-custom-data
 https://towardsdatascience.com/how-to-apply-a-cnn-from-pytorch-to-your-images-18515416bba1
 https://discuss.pytorch.org/t/cnn-input-image-size-formula/27954
 https://stackoverflow.com/questions/66488807/pytorch-model-input-shape/66562064#66562064
+https://medium.com/mini-distill/effect-of-batch-size-on-training-dynamics-21c14f7a716e
+https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
+https://discuss.pytorch.org/t/how-to-represent-class-to-idx-map-for-custom-dataset-in-pytorch/37510
 
 
 ***
