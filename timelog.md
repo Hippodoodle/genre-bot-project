@@ -164,3 +164,15 @@
 
 ### 2 Feb 2023
 * *7 hours* Wrote python script to load trained models and evaluate them
+
+### 4 Feb 2023
+* *2 hours* Fixed data generation script for full 8 genres
+* *3 hours* Modified model evaluation script for full 8 genres and refactored a few methods
+* *2 hours* Fixed and ran model training script
+
+### 5 Feb 2023
+* *2 hours* Wrote script for generating multiclass confusion matrix
+* *2 hours* Figured out how to get true labels of data
+
+### 6 Feb 2023
+* *28 hours* Hyperparameter training, found best config
