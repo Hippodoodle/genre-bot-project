@@ -176,3 +176,6 @@
 
 ### 6 Feb 2023
 * *28 hours* Hyperparameter training, found best config
+
+### 10 Feb 2023
+* *4 hours* Finished evaluation script
