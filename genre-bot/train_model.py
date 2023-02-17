@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader, random_split
 
 DATA_DIR = "./data/fma_small_spect_dpi100"
 RESULT_DIR = "./results/"
-CLASSES = 2
+CLASSES = 8
 
 
 class Net(nn.Module):
@@ -86,7 +86,6 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
     # Assuming that we are on a CUDA machine, this should print a CUDA device:
     print(f"Using {device} device")
     print(net)
-    print(classes)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
@@ -99,8 +98,7 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
 
     trainset, testset = load_data(data_dir)
 
-    test_abs = int(len(trainset) * 0.8)
-    train_subset, validation_subset = random_split(trainset, [test_abs, len(trainset) - test_abs])
+    train_subset, validation_subset = random_split(trainset, [len(trainset) - len(testset), len(testset)])
 
     trainloader = DataLoader(
         train_subset,
@@ -187,7 +185,11 @@ def test_accuracy(net, device: str = "cpu", data_dir: str | Path = DATA_DIR):
 
 def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None =  None):
 
+    DATA_DIR = "./data/fma_small_spect_dpi100"
+
     data_dir = os.path.abspath(DATA_DIR)
+
+    local_dir = os.path.join(RESULT_DIR, f"tuning_multiclass_{len(genres)}_genres", os.path.basename(data_dir))
 
     config = {
         # "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 11)),
@@ -197,20 +199,20 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
         "l1": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
         "l2": tune.sample_from(lambda _: 2 ** np.random.randint(6, 10)),
         "lr": tune.loguniform(1e-4, 1e-2),
-        "batch_size": tune.choice([1, 2, 4])
+        "batch_size": tune.choice([1, 2, 4, 8, 16])
     }
 
     scheduler = ASHAScheduler(
         metric="loss",
         mode="min",
         max_t=max_num_epochs,
-        grace_period=2,
+        grace_period=10,
         reduction_factor=2)
 
     reporter = CLIReporter(
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=20,
-        print_intermediate_tables=False)
+        max_report_frequency=60,
+        print_intermediate_tables=True)
 
     result: ExperimentAnalysis = tune.run(
         partial(train_fma, data_dir=data_dir),
@@ -218,7 +220,8 @@ def tune_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
-        progress_reporter=reporter)
+        progress_reporter=reporter,
+        local_dir=local_dir)
 
     best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
     print("Best trial config: {}".format(best_trial.config))
@@ -254,7 +257,7 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
     if data_dir is None:
         raise
 
-    local_dir = os.path.join(RESULT_DIR, f"experiment_{len(genres)}_genres", os.path.basename(data_dir))
+    local_dir = os.path.join(RESULT_DIR, f"binary_{len(genres)}_genres", os.path.basename(data_dir))
 
     config = {
         "l1": 128,
@@ -313,13 +316,17 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
 
 def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None = None):
 
+    DATA_DIR = "./data/fma_small_spect_dpi100"
+
     data_dir = os.path.abspath(DATA_DIR)
 
+    local_dir = os.path.join(RESULT_DIR, f"multiclass_{len(genres)}_genres", os.path.basename(data_dir))
+
     config = {
-        "l1": 128,
-        "l2": 512,
-        "lr": 0.001,
-        "batch_size": 1
+        "l1": 256,
+        "l2": 64,
+        "lr": 0.0018890629799798993,
+        "batch_size": 4
     }
 
     scheduler = ASHAScheduler(
@@ -340,7 +347,8 @@ def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: i
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
-        progress_reporter=reporter)
+        progress_reporter=reporter,
+        local_dir=local_dir)
 
     best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
     print("Best trial config: {}".format(best_trial.config))
@@ -366,7 +374,7 @@ def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: i
 def main():
 
     TUNE = False
-    EXPERIMENT = True
+    EXPERIMENT = False
     global CLASSES
     global genres
 
@@ -379,7 +387,8 @@ def main():
 
     if TUNE:
         CLASSES = 8
-        tune_run(num_samples=20, max_num_epochs=10, gpus_per_trial=1, checkpoint=MODEL_DIR)
+        genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+        tune_run(num_samples=100, max_num_epochs=20, gpus_per_trial=1, checkpoint=MODEL_DIR)
 
     elif EXPERIMENT:
         CLASSES = 2
@@ -405,7 +414,8 @@ def main():
 
     else:
         CLASSES = 8
-        simple_run(max_num_epochs=2, checkpoint=MODEL_DIR)
+        genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+        simple_run(max_num_epochs=10, checkpoint=MODEL_DIR)
 
 
 if __name__ == "__main__":
