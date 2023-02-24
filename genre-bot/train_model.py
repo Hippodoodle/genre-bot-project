@@ -66,9 +66,11 @@ def load_data(data_dir: str | Path = DATA_DIR):
 
     trainset = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=transform)
 
+    validationset = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "validation"), transform=transform)
+
     testset = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "test"), transform=transform)
 
-    return trainset, testset
+    return trainset, validationset, testset
 
 
 def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | Path = DATA_DIR):
@@ -96,17 +98,17 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
         net.load_state_dict(model_state)
         optimizer.load_state_dict(optimizer_state)
 
-    trainset, testset = load_data(data_dir)
+    trainset, validationset, testset = load_data(data_dir)
 
-    train_subset, validation_subset = random_split(trainset, [len(trainset) - len(testset), len(testset)])
+    #train_subset, validation_subset = random_split(trainset, [len(trainset) - len(testset), len(testset)])
 
     trainloader = DataLoader(
-        train_subset,
+        trainset,
         batch_size=int(config["batch_size"]),
         shuffle=True,
         num_workers=8)
     validationloader = DataLoader(
-        validation_subset,
+        validationset,
         batch_size=int(config["batch_size"]),
         shuffle=True,
         num_workers=8)
@@ -165,7 +167,7 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
 
 
 def test_accuracy(net, device: str = "cpu", data_dir: str | Path = DATA_DIR):
-    trainset, testset = load_data(data_dir)
+    trainset, validationset, testset = load_data(data_dir)
 
     testloader = DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
 
