@@ -179,3 +179,11 @@
 
 ### 10 Feb 2023
 * *4 hours* Finished evaluation script
+
+### All Feb 2023
+* *? hours* Dissertation writing
+
+### 23 Feb 2023
+* *6 hours* Re-wrote all scripts to fix validation split
+* *1 hour* Regenerated multiclass dataset
+* *3 hours* Added best checkpoint analysis to evaluate_model.py
