@@ -218,16 +218,21 @@ def main(fresh: bool = True, pair_experiment: bool = False):
             experiment_dir = SPECT_DIR
 
         train_dir = os.path.join(experiment_dir, 'training')
+        validation_dir = os.path.join(experiment_dir, 'validation')
         test_dir = os.path.join(experiment_dir, 'test')
 
         if not os.path.exists(train_dir):
             os.makedirs(train_dir)
+        if not os.path.exists(validation_dir):
+            os.makedirs(validation_dir)
         if not os.path.exists(test_dir):
             os.makedirs(test_dir)
 
         for g in set:
             if not os.path.exists(os.path.join(train_dir, g)):
                 os.makedirs(os.path.join(train_dir, g))
+            if not os.path.exists(os.path.join(validation_dir, g)):
+                os.makedirs(os.path.join(validation_dir, g))
             if not os.path.exists(os.path.join(test_dir, g)):
                 os.makedirs(os.path.join(test_dir, g))
 
@@ -238,9 +243,11 @@ def main(fresh: bool = True, pair_experiment: bool = False):
         for id in small_indices:
             track_split = str(tracks.loc[id]['set', 'split'])
 
+            """
             # Merge validation split into training split
             if track_split == 'validation':
                 track_split = 'training'
+            """
 
             if len(genre_sets) != 1:
                 experiment_dir = os.path.join(SPECT_DIR, genre_set[0] + '_' + genre_set[1])
