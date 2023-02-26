@@ -10,29 +10,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import sklearn as skl
-import sklearn.svm
-import sklearn.utils
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.preprocessing import (LabelBinarizer, LabelEncoder,
-                                   MultiLabelBinarizer, StandardScaler)
-from sklearn.svm import SVC, LinearSVC
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.utils import shuffle
 
 AUDIO_DIR = "./data/fma/data/fma_small"
-
-DPI = 100
-
-GENRES = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
-GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
-GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
 
 matplotlib.use("Agg")
 
@@ -60,7 +39,7 @@ def track_spectrogram_exists(spect_dir, track_id):
     return os.path.exists(get_spect_path(spect_dir, track_id))
 
 
-def audio_to_spectrogram(audio_dir: str | Path, track_id: int, spect_dir: str | Path):
+def audio_to_spectrogram(audio_dir: str | Path, track_id: int, spect_dir: str | Path, dpi: int = 100):
 
     filename = get_audio_path(audio_dir, track_id)
     try:
@@ -78,7 +57,7 @@ def audio_to_spectrogram(audio_dir: str | Path, track_id: int, spect_dir: str | 
                 format='png',
                 bbox_inches='tight',
                 pad_inches=0,
-                dpi=DPI)
+                dpi=dpi)
     plt.close('all')
 
 
@@ -116,50 +95,19 @@ def load_tracks(filepath):
     return tracks
 
 
-"""
-def generate_and_check_data(tracks: pd.DataFrame, genres: pd.DataFrame, subset_str='small', ):
-
-    # Select Subset
-    subset = tracks[tracks['set', 'subset'] <= subset_str]
-    if subset.shape == (8000, 52):
-        print(f"Success {subset_str} subset selected")
-    else:
-        print("Error: Something wrong with the dataset (wrong shape)")
-
-    small_indices = small.index.to_list()
-"""
-
-"""
-def generate_data(path: str, genres: list[str], indices: list[int], tracks: pd.DataFrame, fresh: bool):
-
-    # Load all tracks in the index list
-    for id in indices:
-        track_split = str(tracks.loc[id]['set', 'split'])
-
-        # Merge validation split into training split
-        if track_split == 'validation':
-            track_split = 'training'
-
-        # Get track genre and path
-        track_genre = get_track_genre(id, tracks)
-        track_path = os.path.join(SPECT_DIR, track_split, track_genre)
-
-        # Save a track if we want to save it and it has the desired genre
-        if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genres:
-            print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
-            audio_to_spectrogram(AUDIO_DIR, id, track_path)
-"""
-
-
-def main(fresh: bool = True, pair_experiment: bool = False):
+def generate_dataset(genres: list[str], fresh: bool = True, pair_experiment: bool = False, dpi: int = 100):
     """Generates spectrogram dataset, stored by genre, from the small fma dataset
 
     Parameters
     ----------
+    genres : list[str]
+        List of genre string labels being used
     fresh : bool, optional
         Fresh load of all the data if set to True, by default True
     pair_experiment : bool, optional
         Generate datasets for binary choice experiments if set to True, by default False
+    dpi : int, optional
+        DPI setting for spectrogram generation, by default 100
     """
 
     # Load Metadata
@@ -182,30 +130,23 @@ def main(fresh: bool = True, pair_experiment: bool = False):
 
     small_indices = small.index.to_list()
 
-    genres_list = []
-    for id in small_indices:
-        genre = str(tracks.loc[id]['track', 'genre_top'])
-        if genre not in genres_list:
-            genres_list.append(genre)
-    print(f"All genres in Small: {genres_list} {GENRES == genres_list}")
-
     # Generate genre pairs for experiments
     genre_sets: list[tuple[str, str]] | list[list[str]] = []
     if pair_experiment:
-        for g1 in GENRES:
-            for g2 in GENRES:
+        for g1 in genres:
+            for g2 in genres:
                 if g1 < g2 and (g1, g2) not in genre_sets:
                     genre_sets.append((g1, g2))
                 elif g1 > g2 and (g2, g1) not in genre_sets:
                     genre_sets.append((g2, g1))
     else:
-        genre_sets = [GENRES]
+        genre_sets = [genres]
 
     global SPECT_DIR
     if pair_experiment:
-        SPECT_DIR = "./data/fma_small_spect_dpi100_binary_choice"
+        SPECT_DIR = f"./data/binary_fma_small_spectrograms_dpi{dpi}"
     else:
-        SPECT_DIR = "./data/fma_small_spect_dpi100"
+        SPECT_DIR = f"./data/multiclass_{len(genre_sets[0])}_fma_small_spectrograms_dpi{dpi}"
 
     # Make directories if they don't exist
     if not os.path.exists(SPECT_DIR):
@@ -243,12 +184,6 @@ def main(fresh: bool = True, pair_experiment: bool = False):
         for id in small_indices:
             track_split = str(tracks.loc[id]['set', 'split'])
 
-            """
-            # Merge validation split into training split
-            if track_split == 'validation':
-                track_split = 'training'
-            """
-
             if len(genre_sets) != 1:
                 experiment_dir = os.path.join(SPECT_DIR, genre_set[0] + '_' + genre_set[1])
             else:
@@ -260,13 +195,26 @@ def main(fresh: bool = True, pair_experiment: bool = False):
 
             # Save a track if we want to save it and it has the desired genre
             if (not os.path.exists(get_spect_path(track_path, id)) or fresh) and track_genre in genre_set:
-                #print(id, get_track_genre(id, tracks), tracks.loc[id]['track', 'title'], tracks.loc[id]['set', 'split'])
-                audio_to_spectrogram(AUDIO_DIR, id, track_path)  # TODO: optimise to not load the same song twice
+                audio_to_spectrogram(AUDIO_DIR, id, track_path)
+
         print(f"Generated data for {genre_set} set")
 
 
-if __name__ == "__main__":
+def main():
+
     start = time.time()
-    main(fresh=True, pair_experiment=False)
+
+    # GENRES = ['Pop', 'Rock', 'Instrumental']
+    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']
+    # GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+
+    DPI = 100
+
+    generate_dataset(genres=GENRES, fresh=True, pair_experiment=False, dpi=DPI)
+
     end = time.time()
     print(f'Data generation took {end - start} seconds')
+
+
+if __name__ == "__main__":
+    main()
