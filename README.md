@@ -149,6 +149,15 @@
         - 8 way confusion matrix reinforces the folk-instrumental confusion, reassuring that results are congruent
         - Use a different confusion matrix for each model -> if concerned about page space, can put matrices in the appendix
         - Diss probably won't go far enough for publication, but could be handed on to a master's student to carry on research
+24/02/2023 Fithteenth Supervisor Meeting
+    - Notes:
+        - Talked about dissertation progress
+        - Should look at example dissertations
+        - If I have a section I want feedback on, send to Chris
+        - confusion matrices take up space, so don't worry, also don't need to fill out all 40 pages
+        - discussed how confusion matrix changes throughout training
+            -> not invaluable to think about/research further/talk about
+        - get on with my 5 genre experiment and get some stuff written down 
 
 ***
 
