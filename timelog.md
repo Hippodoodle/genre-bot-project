@@ -187,3 +187,21 @@
 * *6 hours* Re-wrote all scripts to fix validation split
 * *1 hour* Regenerated multiclass dataset
 * *3 hours* Added best checkpoint analysis to evaluate_model.py
+
+### 24 Feb 2023
+* *2 hours* Refactored generate_dataset.py
+* *3 hours* Updated generate_dataset.py to generate multiclass dataset with 5 genres
+
+### 26 Feb 2023
+* *3 hours* Finished updating scripts
+
+### 2 Mar 2023
+* *2 hours* Fixed training script
+* *2 hours* Trained 5 genre multiclass model
+
+### 6 Mar 2023
+* *2 hours* Reworked data directories
+* *2 hours* Updated evaluation script
+
+### 8 Mar 2023
+* *4 hours* Updated check_dataset.py
