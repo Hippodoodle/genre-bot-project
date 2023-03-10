@@ -158,6 +158,17 @@
         - discussed how confusion matrix changes throughout training
             -> not invaluable to think about/research further/talk about
         - get on with my 5 genre experiment and get some stuff written down 
+03/03/2023 Sixteenth Supervisor Meeting
+    - Notes:
+        - push past the humble beginings part -> more valuable to talk about what didn't work but since it worked fine 
+        - talk about just doing general image recognition, it's been done a lot so there's lots of ressources out there, but it's not been applied much to this problem
+        - research question: is it possible to use spectrograms with well understood image classification techinqies in order to genre classification on songs
+        - talk about what other people have done
+        - gtzan dataset has potentially fishy models that have 100% accuracy
+        - can't scientifically decide that the 3rd rq is
+        - write a short bit  in the conclusion -> a very subjective problem
+        - third might not be a research question, just a point to talk about 
+        - I was thinking: can modern techniques improve performance for this problem (Chris says: don't other with this question)
 
 ***
 
