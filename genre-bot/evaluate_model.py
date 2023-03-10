@@ -242,15 +242,15 @@ def binary_evaluation():
 
 def multiclass_evaluation():
 
-    DATA_DIR = "./data/fma_small_spect_dpi100"
-    RESULTS_DIR = "./results/multiclass_8_genres/"
-    CLASSES = 8
+    CLASSES = 5
+    DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
+    RESULTS_DIR = f"./results/multiclass_{CLASSES}_genres/"
 
     # Get data directory
     data_dir = DATA_DIR
 
     # Get experiment directory
-    experiment_dir = os.path.join(RESULTS_DIR, "fma_small_spect_dpi100")
+    experiment_dir = os.path.join(RESULTS_DIR, os.path.basename(DATA_DIR))
     experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
 
     # Get checkpoint directory
@@ -311,6 +311,8 @@ def multiclass_evaluation():
     if torch.cuda.is_available():
         device = "cuda:0"
     model.to(device)
+
+    print(f"Best checkpoint is {os.path.basename(os.path.split(best_checkpoint_path)[0])}")
 
     test_acc = test_accuracy(model, device, data_dir)
     print(f"Accuracy for {CLASSES} genre multiclass experiment: {test_acc}")
