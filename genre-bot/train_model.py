@@ -16,9 +16,9 @@ from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader, random_split
 
 
-DATA_DIR = "./data/fma_small_spect_dpi100"
+DATA_DIR = "./data/multiclass_5_fma_small_spectrograms_dpi100"
 RESULT_DIR = "./results/"
-CLASSES = 8
+CLASSES = 5
 
 
 class Net(nn.Module):
@@ -318,7 +318,7 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
 
 def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None = None):
 
-    DATA_DIR = "./data/fma_small_spect_dpi100"
+    DATA_DIR = "./data/multiclass_5_fma_small_spectrograms_dpi100"
 
     data_dir = os.path.abspath(DATA_DIR)
 
@@ -390,7 +390,7 @@ def main():
     if TUNE:
         CLASSES = 8
         genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
-        tune_run(num_samples=100, max_num_epochs=20, gpus_per_trial=1, checkpoint=MODEL_DIR)
+        tune_run(num_samples=100, max_num_epochs=20, gpus_per_trial=1)
 
     elif EXPERIMENT:
         CLASSES = 2
@@ -406,7 +406,7 @@ def main():
             g1 = pair[0]
             g2 = pair[1]
             print(f"Current experiment: {g1}, {g2}")
-            experiment_csv += experiment_run(g1, g2, max_num_epochs=10, checkpoint=MODEL_DIR) + "\n"
+            experiment_csv += experiment_run(g1, g2, max_num_epochs=10) + "\n"
             print("Output:\n" + experiment_csv)
 
         print("Final output:\n" + experiment_csv)
@@ -415,9 +415,9 @@ def main():
         f.close()
 
     else:
-        CLASSES = 8
-        genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
-        simple_run(max_num_epochs=10, checkpoint=MODEL_DIR)
+        CLASSES = 5
+        genres = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']
+        simple_run(max_num_epochs=10)
 
 
 if __name__ == "__main__":
