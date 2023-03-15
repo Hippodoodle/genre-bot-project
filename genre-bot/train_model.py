@@ -16,9 +16,9 @@ from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader, random_split
 
 
-DATA_DIR = "./data/multiclass_5_fma_small_spectrograms_dpi100"
+DATA_DIR = "./data/multiclass_3_fma_small_spectrograms_dpi100"
 RESULT_DIR = "./results/"
-CLASSES = 5
+CLASSES = 3
 
 
 class Net(nn.Module):
@@ -60,7 +60,7 @@ def load_data(data_dir: str | Path = DATA_DIR):
         [
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
 
@@ -318,7 +318,7 @@ def experiment_run(g1: str, g2: str, num_samples: int = 1, max_num_epochs: int =
 
 def simple_run(num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1, checkpoint: str | Path | None = None):
 
-    DATA_DIR = "./data/multiclass_5_fma_small_spectrograms_dpi100"
+    DATA_DIR = "./data/multiclass_3_fma_small_spectrograms_dpi100"
 
     data_dir = os.path.abspath(DATA_DIR)
 
@@ -385,7 +385,7 @@ def main():
 
     genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
     genres = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']  # 5 way binary choice experiment
-    #genres = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
+    genres = ['Pop', 'Rock', 'Instrumental']  # 3 way binary choice experiment
 
     if TUNE:
         CLASSES = 8
@@ -415,8 +415,8 @@ def main():
         f.close()
 
     else:
-        CLASSES = 5
-        genres = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']
+        CLASSES = 3
+        genres = ['Pop', 'Rock', 'Instrumental']
         simple_run(max_num_epochs=10)
 
 
