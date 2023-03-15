@@ -212,5 +212,6 @@
 ### 14 Mar 2023
 * *5 hours* Refactored code in preparation for re-implementing old CNN model architecture
 
-### 14 Mar 2023
-* *2 hours* Finishing yesterday's work
+### 15 Mar 2023
+* *3 hours* Finishing yesterday's work
+* *3 hours* Wrote code to visualise, compare and save examples of data transformations
