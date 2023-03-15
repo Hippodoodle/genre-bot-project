@@ -77,14 +77,9 @@ def load_tracks(filepath):
     for column in COLUMNS:
         tracks[column] = pd.to_datetime(tracks[column])
 
-    SUBSETS = ('small', 'medium', 'large')
-    try:
-        tracks['set', 'subset'] = tracks['set', 'subset'].astype(
-            'category', categories=SUBSETS, ordered=True)
-    except (ValueError, TypeError):
-        # the categories and ordered arguments were removed in pandas 0.25
-        tracks['set', 'subset'] = tracks['set', 'subset'].astype(
-            pd.CategoricalDtype(categories=SUBSETS, ordered=True))
+    SUBSETS = ['small', 'medium', 'large']
+
+    tracks['set', 'subset'] = tracks['set', 'subset'].astype(pd.CategoricalDtype(categories=SUBSETS, ordered=True))
 
     COLUMNS = [('track', 'genre_top'), ('track', 'license'),
                ('album', 'type'), ('album', 'information'),
@@ -205,12 +200,12 @@ def main():
     start = time.time()
 
     # GENRES = ['Pop', 'Rock', 'Instrumental']
-    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']
-    # GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
+    # GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Rock', 'Instrumental']
+    GENRES = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
 
     DPI = 100
 
-    generate_dataset(genres=GENRES, fresh=True, pair_experiment=False, dpi=DPI)
+    generate_dataset(genres=GENRES, fresh=True, pair_experiment=True, dpi=DPI)
 
     end = time.time()
     print(f'Data generation took {end - start} seconds')
