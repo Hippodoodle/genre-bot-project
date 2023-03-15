@@ -169,6 +169,18 @@
         - write a short bit  in the conclusion -> a very subjective problem
         - third might not be a research question, just a point to talk about 
         - I was thinking: can modern techniques improve performance for this problem (Chris says: don't other with this question)
+10/03/2023 Seventeenth Supervisor Meeting
+    - Notes:
+        - Sent over some of the dissertation for feedback
+        - Refer to other papers in background, tuck them away although they are an important
+14/03/2023 Eighteenth Supervisor Meeting
+    - Notes:
+        - "we" is fine
+        - unlikely anyone will want to run the code
+        - remove dead code
+        - worth having a few notes on running the code (instructions)
+        - forget about comparing models if it's too late 
+        - if I have time do an experiment using the smaller cnn model --> sensible story 
 
 ***
 
