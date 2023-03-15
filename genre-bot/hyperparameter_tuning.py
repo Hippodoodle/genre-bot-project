@@ -16,6 +16,9 @@ from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
 
+CLASSES = 8  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
+
+
 class Net(nn.Module):
     def __init__(self, l1: int = 1024, l2: int = 512, classes: int = CLASSES):
         super().__init__()
@@ -225,9 +228,6 @@ def tune_run(data_dir: str, result_dir: str, num_samples: int = 1, max_num_epoch
 
 def main():
 
-    global CLASSES
-
-    CLASSES = 8  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULT_DIR = "./results/"
 
