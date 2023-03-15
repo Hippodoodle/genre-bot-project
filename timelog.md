@@ -205,3 +205,12 @@
 
 ### 8 Mar 2023
 * *4 hours* Updated check_dataset.py
+
+### 11 Mar 2023
+* *5 hours* Re generated all the the datasets for final evaluations
+
+### 14 Mar 2023
+* *5 hours* Refactored code in preparation for re-implementing old CNN model architecture
+
+### 14 Mar 2023
+* *2 hours* Finishing yesterday's work
