@@ -34,9 +34,9 @@ def main():
 
     resized_and_normalized = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=normalize_transform)
 
-    imgs = torch.stack((*[resized[i][0] for i in range(5)], *[resized_and_normalized[i][0] for i in range(5)]))
+    comparison_images = torch.stack((*[resized[i][0] for i in range(5)], *[resized_and_normalized[i][0] for i in range(5)]))
 
-    plt.imshow(transforms.ToPILImage()(torchvision.utils.make_grid(imgs, nrow=5)))
+    plt.imshow(transforms.ToPILImage()(torchvision.utils.make_grid(comparison_images, nrow=5)))
     plt.axis('off')
     plt.savefig("spectrogram_normalize_comparison.png", bbox_inches="tight", dpi=200)
     plt.close()
