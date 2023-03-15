@@ -3,7 +3,6 @@ import time
 from functools import partial
 from pathlib import Path
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -11,9 +10,11 @@ import torchvision
 import torchvision.transforms as transforms
 from ray import tune
 from ray.tune import CLIReporter, ExperimentAnalysis
-from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
+
+
+CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
 
 
 class Net(nn.Module):
@@ -50,7 +51,7 @@ class Net(nn.Module):
         return self.network(x)
 
 
-def load_data(data_dir: str | Path = DATA_DIR):
+def load_data(data_dir: str | Path):
     transform = transforms.Compose(
         [
             transforms.Resize((256, 256)),
@@ -68,30 +69,20 @@ def load_data(data_dir: str | Path = DATA_DIR):
     return trainset, validationset, testset
 
 
-def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | Path = DATA_DIR):
-
-    start = time.time()
+def train_fma(config, data_dir: str | Path):
 
     net = Net(config["l1"], config["l2"])
 
+    # Send to cuda device if one is available
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda:0"
         if torch.cuda.device_count() > 1:
             net = nn.parallel.DataParallel(net)
     net.to(device)
-    # Assuming that we are on a CUDA machine, this should print a CUDA device:
-    print(f"Using {device} device")
-    print(net)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
-
-    if checkpoint_dir:
-        model_state, optimizer_state = torch.load(
-            os.path.join(checkpoint_dir, "checkpoint"))
-        net.load_state_dict(model_state)
-        optimizer.load_state_dict(optimizer_state)
 
     trainset, validationset, _ = load_data(data_dir)
 
@@ -155,9 +146,6 @@ def train_fma(config, checkpoint_dir: str | Path | None = None, data_dir: str | 
 
         tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
 
-    end = time.time()
-    print(f'Training took {end - start} seconds')
-
 
 def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
     _, _, testset = load_data(data_dir)
@@ -178,7 +166,7 @@ def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
     return correct / total
 
 
-def multiclass_train(data_dir: str, result_dir: str, num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1):
+def multiclass_train(data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
 
     data_dir = os.path.abspath(data_dir)
 
@@ -207,7 +195,7 @@ def multiclass_train(data_dir: str, result_dir: str, num_samples: int = 1, max_n
         partial(train_fma, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
-        num_samples=num_samples,
+        num_samples=1,
         scheduler=scheduler,
         progress_reporter=reporter,
         local_dir=local_dir)
@@ -215,13 +203,15 @@ def multiclass_train(data_dir: str, result_dir: str, num_samples: int = 1, max_n
 
 def main():
 
-    global CLASSES
-
-    CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULT_DIR = "./results/"
 
+    start = time.time()
+
     multiclass_train(data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
+
+    end = time.time()
+    print(f'Training took {end - start} seconds')
 
 
 if __name__ == "__main__":
