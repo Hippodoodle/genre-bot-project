@@ -53,7 +53,7 @@ def load_data(data_dir: str | Path):
         [
             transforms.Resize((256, 256)),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
 
@@ -70,6 +70,7 @@ def train_fma(config, data_dir: str | Path):
 
     net = Net(config["l1"], config["l2"])
 
+    # Send to cuda device if one is available
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -162,7 +163,7 @@ def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
     return correct / total
 
 
-def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, num_samples: int = 1, max_num_epochs: int = 10, gpus_per_trial: int = 1):
+def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
 
     for filename in os.listdir(data_dir):
         if g1.lower() in filename.lower() and g2.lower() in filename.lower():
@@ -194,7 +195,7 @@ def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, num_samples: 
         partial(train_fma, data_dir=data_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
-        num_samples=num_samples,
+        num_samples=1,
         scheduler=scheduler,
         progress_reporter=reporter,
         local_dir=local_dir,
