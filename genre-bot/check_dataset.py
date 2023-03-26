@@ -101,7 +101,7 @@ def main():
     binary_check(data_dir=DATA_DIR, track_data=track_data)
     """
 
-    DATA_DIR = "./data/multiclass_5_fma_small_spectrograms_dpi100"
+    DATA_DIR = "./data/multiclass_8_fma_small_spectrograms_dpi100"
     multiclass_check(data_dir=DATA_DIR, track_data=track_data)
 
     print("Dataset checks passed.")
