@@ -14,37 +14,25 @@ from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
 
-CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
-
-
 class Net(nn.Module):
-    def __init__(self, l1: int = 1024, l2: int = 512, classes: int = CLASSES):
+    def __init__(self, classes: int):
         super().__init__()
         self.network = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2, 2),
-
-            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+            # 224 x 224 x 3
+            nn.Conv2d(3, 6, kernel_size=5, stride=1, padding=1),  # 222 x 222 x 6
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
-
-            nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
+            # 111 x 111 x 6
+            nn.Conv2d(6, 16, kernel_size=5, stride=1, padding=1),  # 109 x 109 x 16
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
-
+            # 54 x 54 x 16
             nn.Flatten(),
-            nn.Linear(256*32*32, l1),
+            nn.Linear(16 * 54 * 54, 120),
             nn.ReLU(),
-            nn.Linear(l1, l2),
+            nn.Linear(120, 36),
             nn.ReLU(),
-            nn.Linear(l2, classes)
+            nn.Linear(36, classes)
         )
 
     def forward(self, x):
@@ -54,9 +42,9 @@ class Net(nn.Module):
 def load_data(data_dir: str | Path):
     transform = transforms.Compose(
         [
-            transforms.Resize((256, 256)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
 
@@ -69,9 +57,9 @@ def load_data(data_dir: str | Path):
     return trainset, validationset, testset
 
 
-def train_fma(config, data_dir: str | Path):
+def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
 
-    net = Net(config["l1"], config["l2"])
+    net = Net(classes=num_classes)
 
     # Send to cuda device if one is available
     device = "cpu"
@@ -97,7 +85,7 @@ def train_fma(config, data_dir: str | Path):
         shuffle=True,
         num_workers=8)
 
-    for epoch in range(10):  # loop over the dataset multiple times
+    for epoch in range(num_epochs):  # loop over the dataset multiple times
         running_loss = 0.0
         epoch_steps = 0
         for i, data in enumerate(trainloader, 0):
@@ -166,16 +154,14 @@ def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
     return correct / total
 
 
-def multiclass_train(data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
+def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
 
     data_dir = os.path.abspath(data_dir)
 
-    local_dir = os.path.join(result_dir, f"multiclass_{CLASSES}_genres", os.path.basename(data_dir))
+    local_dir = os.path.join(result_dir, f"multiclass_{num_classes}_genres", os.path.basename(data_dir))
 
     config = {
-        "l1": 256,
-        "l2": 64,
-        "lr": 0.0018890629799798993,
+        "lr": 0.001,
         "batch_size": 4
     }
 
@@ -188,11 +174,11 @@ def multiclass_train(data_dir: str, result_dir: str, max_num_epochs: int = 10, g
 
     reporter = CLIReporter(
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=20,
+        max_report_frequency=60,
         print_intermediate_tables=False)
 
     _: ExperimentAnalysis = tune.run(
-        partial(train_fma, data_dir=data_dir),
+        partial(train_fma, num_classes=num_classes, data_dir=data_dir, num_epochs=max_num_epochs),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=1,
@@ -203,12 +189,13 @@ def multiclass_train(data_dir: str, result_dir: str, max_num_epochs: int = 10, g
 
 def main():
 
+    CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULT_DIR = "./results/"
 
     start = time.time()
 
-    multiclass_train(data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
+    multiclass_train(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
 
     end = time.time()
     print(f'Training took {end - start} seconds')
