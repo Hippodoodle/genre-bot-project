@@ -215,3 +215,9 @@
 ### 15 Mar 2023
 * *3 hours* Finishing yesterday's work
 * *3 hours* Wrote code to visualise, compare and save examples of data transformations
+
+### 15 Mar 2023
+* *6 hours* wrote more scripts to generate visualisations etc
+
+### 17 Mar 2023
+* *7 hours* Ran final experiments and visulaisations
