@@ -242,16 +242,20 @@ def binary_evaluation():
 
 def multiclass_evaluation():
 
-    CLASSES = 5
+    CLASSES = 3
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULTS_DIR = f"./results/multiclass_{CLASSES}_genres/"
 
     # Get data directory
     data_dir = DATA_DIR
 
-    # Get experiment directory
-    experiment_dir = os.path.join(RESULTS_DIR, os.path.basename(DATA_DIR))
-    experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
+    # Manually choose dir to evaluate
+    experiment_dir = "./results/multiclass_3_genres/multiclass_3_fma_small_spectrograms_dpi100/train_fma_2023-03-25_18-40-27/"
+
+    # Get latest experiment directory if none manually chosen
+    if experiment_dir is None:
+        experiment_dir = os.path.join(RESULTS_DIR, os.path.basename(DATA_DIR))
+        experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
 
     # Get checkpoint directory
     checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
@@ -273,7 +277,7 @@ def multiclass_evaluation():
                                               "checkpoint")
 
         # Initialise model and optimiser
-        model = Net(config["l1"], config["l2"], CLASSES)
+        model = Net(config.get("l1", 120), config.get("l2", 36), CLASSES)
         optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
 
         # Load state dicts
@@ -314,7 +318,7 @@ def multiclass_evaluation():
 
     print(f"Best checkpoint is {os.path.basename(os.path.split(best_checkpoint_path)[0])}")
 
-    test_acc = test_accuracy(model, device, data_dir)
+    test_acc = test_accuracy(model, data_dir, device)
     print(f"Accuracy for {CLASSES} genre multiclass experiment: {test_acc}")
 
     f1_score_micro, f1_score_macro = get_f1_score(model, data_dir, device, multiclass=True)  # type: ignore
@@ -326,7 +330,7 @@ def multiclass_evaluation():
 
 def main():
 
-    #binary_evaluation()
+    # binary_evaluation()
 
     multiclass_evaluation()
 
