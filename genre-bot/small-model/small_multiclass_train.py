@@ -13,6 +13,8 @@ from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
+torch.manual_seed(42)
+
 
 class Net(nn.Module):
     def __init__(self, classes: int):
@@ -77,12 +79,12 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
     trainloader = DataLoader(
         trainset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
+        shuffle=False,
         num_workers=8)
     validationloader = DataLoader(
         validationset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
+        shuffle=False,
         num_workers=8)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
