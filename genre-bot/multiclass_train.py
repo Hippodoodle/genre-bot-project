@@ -13,6 +13,8 @@ from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
+torch.manual_seed(42)
+
 
 class Net(nn.Module):
     def __init__(self, classes: int, l1: int = 1024, l2: int = 512):
@@ -80,19 +82,19 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
     net.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
+    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=config["momentum"])
 
     trainset, validationset, _ = load_data(data_dir)
 
     trainloader = DataLoader(
         trainset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
+        shuffle=False,
         num_workers=8)
     validationloader = DataLoader(
         validationset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
+        shuffle=False,
         num_workers=8)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -139,8 +141,9 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
                 val_steps += 1
 
         with tune.checkpoint_dir(epoch) as checkpoint_dir:
-            path = os.path.join(checkpoint_dir, "checkpoint")
-            torch.save((net.state_dict(), optimizer.state_dict()), path)
+            if epoch > 4:
+                path = os.path.join(checkpoint_dir, "checkpoint")
+                torch.save((net.state_dict(), optimizer.state_dict()), path)
 
         tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
 
@@ -170,12 +173,14 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
     local_dir = os.path.join(result_dir, f"multiclass_{num_classes}_genres", os.path.basename(data_dir))
 
-    config = {
-        "l1": 256,
-        "l2": 64,
-        "lr": 0.0018890629799798993,
-        "batch_size": 4
-    }
+    #config = {
+    #    "l1": 256,
+    #    "l2": 64,
+    #    "lr": 0.0018890629799798993,
+    #    "momentum": 0.9,
+    #    "batch_size": 4
+    #}
+    config = {'l1': 256, 'l2': 128, 'lr': 0.004877526963999047, 'momentum': 0.5220414060400745, 'batch_size': 8}
 
     scheduler = ASHAScheduler(
         metric="loss",
@@ -201,7 +206,7 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
 def main():
 
-    CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
+    CLASSES = 8  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULT_DIR = "./results/"
 
