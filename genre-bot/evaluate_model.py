@@ -8,7 +8,7 @@ import torch
 import torch.optim as optim
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader
-from train_model import Net, load_data, test_accuracy
+from multiclass_train import Net, load_data, test_accuracy
 
 
 @torch.no_grad()
@@ -242,7 +242,7 @@ def binary_evaluation():
 
 def multiclass_evaluation():
 
-    CLASSES = 3
+    CLASSES = 8
     DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
     RESULTS_DIR = f"./results/multiclass_{CLASSES}_genres/"
 
@@ -250,15 +250,15 @@ def multiclass_evaluation():
     data_dir = DATA_DIR
 
     # Manually choose dir to evaluate
-    experiment_dir = "./results/multiclass_3_genres/multiclass_3_fma_small_spectrograms_dpi100/train_fma_2023-03-25_18-40-27/"
+    checkpoint_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/tuning_multiclass_8_genres/multiclass_8_fma_small_spectrograms_dpi100/train_fma_2023-03-27_18-00-48/train_fma_ec1a1_00030_30_batch_size=8,l1=256,l2=128,lr=0.0049,momentum=0.5220_2023-03-27_20-32-14"
 
     # Get latest experiment directory if none manually chosen
-    if experiment_dir is None:
+    if checkpoint_dir is None:
         experiment_dir = os.path.join(RESULTS_DIR, os.path.basename(DATA_DIR))
         experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
 
-    # Get checkpoint directory
-    checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
+        # Get checkpoint directory
+        checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
 
     # Load checkpoint config
     with open(os.path.join(checkpoint_dir, "params.json")) as json_file:
@@ -268,7 +268,7 @@ def multiclass_evaluation():
     best_checkpoint_path: str = ""
 
     # Iterate over checkpoints
-    for i in range(10):
+    for i in range(5, 10):
 
         # Get latest checkpoint file
         latest_checkpoint_path = os.path.join(checkpoint_dir,
@@ -277,8 +277,8 @@ def multiclass_evaluation():
                                               "checkpoint")
 
         # Initialise model and optimiser
-        model = Net(config.get("l1", 120), config.get("l2", 36), CLASSES)
-        optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
+        model = Net(CLASSES, l1=config["l1"], l2=config["l2"])
+        optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
 
         # Load state dicts
         model_state, optimizer_state = torch.load(latest_checkpoint_path)
@@ -301,8 +301,8 @@ def multiclass_evaluation():
         del model
 
     # Initialise model and optimiser
-    model = Net(config["l1"], config["l2"], CLASSES)
-    optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
+    model = Net(CLASSES, l1=config["l1"], l2=config["l2"])
+    optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
 
     # Load state dicts
     model_state, optimizer_state = torch.load(best_checkpoint_path)
