@@ -13,7 +13,7 @@ from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
-torch.manual_seed(42)
+torch.manual_seed(3407)
 
 
 class Net(nn.Module):
@@ -79,17 +79,17 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
     trainloader = DataLoader(
         trainset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=8)
     validationloader = DataLoader(
         validationset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=8)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
-        running_loss = 0.0
-        epoch_steps = 0
+        train_loss = 0.0
+        train_steps = 0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -104,12 +104,8 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
             loss.backward()
             optimizer.step()
 
-            # print some statistics
-            running_loss += loss.item()
-            epoch_steps += 1
-            if i % 2000 == 1999:  # print every 2000 mini-batches
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1, running_loss / epoch_steps))
-                running_loss = 0.0
+            train_loss += loss.item()
+            train_steps += 1
 
         # Validation loss
         val_loss = 0.0
@@ -134,7 +130,7 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
             path = os.path.join(checkpoint_dir, "checkpoint")
             torch.save((net.state_dict(), optimizer.state_dict()), path)
 
-        tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+        tune.report(loss=(val_loss / val_steps), accuracy=correct / total, train_loss=(train_loss / train_steps))
 
 
 def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
@@ -160,7 +156,7 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
     data_dir = os.path.abspath(data_dir)
 
-    local_dir = os.path.join(result_dir, f"multiclass_{num_classes}_genres", os.path.basename(data_dir))
+    local_dir = os.path.join(result_dir, f"small_{num_classes}_genres", os.path.basename(data_dir))
 
     config = {
         "lr": 0.001,
@@ -176,7 +172,7 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
     reporter = CLIReporter(
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=60,
+        max_report_frequency=600,
         print_intermediate_tables=False)
 
     _: ExperimentAnalysis = tune.run(
@@ -186,18 +182,19 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
         num_samples=1,
         scheduler=scheduler,
         progress_reporter=reporter,
-        local_dir=local_dir)
+        local_dir=local_dir,
+        verbose=0)
 
 
 def main():
 
-    CLASSES = 3  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
-    DATA_DIR = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
-    RESULT_DIR = "./results/"
+    CLASSES = 8  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
+    DATA_DIR = f"../data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
+    RESULT_DIR = "../results/"
 
     start = time.time()
 
-    multiclass_train(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
+    multiclass_train(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=30)
 
     end = time.time()
     print(f'Training took {end - start} seconds')
