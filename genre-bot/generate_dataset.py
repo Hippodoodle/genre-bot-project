@@ -53,7 +53,7 @@ def audio_to_spectrogram(audio_dir: str | Path, track_id: int, spect_dir: str | 
     ax.axis('off')
     S_dB = librosa.power_to_db(S, ref=np.max)
     librosa.display.specshow(S_dB, sr=sr, fmax=8000, ax=ax)
-    fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),  # TODO: remove white border
+    fig.savefig(os.path.join(spect_dir, '{:06d}'.format(track_id) + '.png'),
                 format='png',
                 bbox_inches='tight',
                 pad_inches=0,
