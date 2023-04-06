@@ -13,31 +13,34 @@ from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
 
+torch.manual_seed(3407)
+
 
 class Net(nn.Module):
-    def __init__(self, l1: int = 1024, l2: int = 512, classes: int = 2):
+    def __init__(self, classes: int, l1: int = 1024, l2: int = 512):
         super().__init__()
         self.network = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, padding=1),
+            # 224 x 224 x 3
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
-
+            # 112 x 112 x 64
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
-
+            # 56 x 56 128
             nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2, 2),
-
+            # 28 x 28 x 256
             nn.Flatten(),
-            nn.Linear(256*32*32, l1),
+            nn.Linear(28 * 28 * 256, l1),
             nn.ReLU(),
             nn.Linear(l1, l2),
             nn.ReLU(),
@@ -51,9 +54,9 @@ class Net(nn.Module):
 def load_data(data_dir: str | Path):
     transform = transforms.Compose(
         [
-            transforms.Resize((256, 256)),
+            transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
 
@@ -66,9 +69,9 @@ def load_data(data_dir: str | Path):
     return trainset, validationset, testset
 
 
-def train_fma(config, data_dir: str | Path):
+def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
 
-    net = Net(config["l1"], config["l2"])
+    net = Net(classes=num_classes, l1=config["l1"], l2=config["l2"])
 
     # Send to cuda device if one is available
     device = "cpu"
@@ -79,7 +82,7 @@ def train_fma(config, data_dir: str | Path):
     net.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
+    optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=config["momentum"])
 
     trainset, validationset, _ = load_data(data_dir)
 
@@ -94,9 +97,9 @@ def train_fma(config, data_dir: str | Path):
         shuffle=True,
         num_workers=8)
 
-    for epoch in range(10):  # loop over the dataset multiple times
-        running_loss = 0.0
-        epoch_steps = 0
+    for epoch in range(num_epochs):  # loop over the dataset multiple times
+        train_loss = 0.0
+        train_steps = 0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -111,12 +114,8 @@ def train_fma(config, data_dir: str | Path):
             loss.backward()
             optimizer.step()
 
-            # print some statistics
-            running_loss += loss.item()
-            epoch_steps += 1
-            if i % 2000 == 1999:  # print every 2000 mini-batches
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1, running_loss / epoch_steps))
-                running_loss = 0.0
+            train_loss += loss.item()
+            train_steps += 1
 
         # Validation loss
         val_loss = 0.0
@@ -138,10 +137,11 @@ def train_fma(config, data_dir: str | Path):
                 val_steps += 1
 
         with tune.checkpoint_dir(epoch) as checkpoint_dir:
-            path = os.path.join(checkpoint_dir, "checkpoint")
-            torch.save((net.state_dict(), optimizer.state_dict()), path)
+            if epoch > 4:
+                path = os.path.join(checkpoint_dir, "checkpoint")
+                torch.save((net.state_dict(), optimizer.state_dict()), path)
 
-        tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+        tune.report(loss=(val_loss / val_steps), accuracy=correct / total, train_loss=(train_loss / train_steps))
 
 
 def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
@@ -163,7 +163,7 @@ def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
     return correct / total
 
 
-def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
+def binary_train(g1: str, g2: str, num_classes: int, data_dir: str, result_dir: str, max_num_epochs: int = 10, gpus_per_trial: int = 1):
 
     for filename in os.listdir(data_dir):
         if g1.lower() in filename.lower() and g2.lower() in filename.lower():
@@ -172,12 +172,7 @@ def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, max_num_epoch
 
     local_dir = os.path.join(result_dir, f"binary_{len(genres)}_genres", os.path.basename(data_dir))
 
-    config = {
-        "l1": 256,
-        "l2": 64,
-        "lr": 0.0018890629799798993,
-        "batch_size": 4
-    }
+    config = {'l1': 32, 'l2': 64, 'lr': 0.008564357333175636, 'momentum': 0.2887587012235814, 'batch_size': 8}
 
     scheduler = ASHAScheduler(
         metric="loss",
@@ -192,7 +187,7 @@ def binary_train(g1: str, g2: str, data_dir: str, result_dir: str, max_num_epoch
         print_intermediate_tables=False)
 
     _: ExperimentAnalysis = tune.run(
-        partial(train_fma, data_dir=data_dir),
+        partial(train_fma, num_classes=num_classes, data_dir=data_dir, num_epochs=max_num_epochs),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=1,
@@ -210,8 +205,8 @@ def main():
 
     genres = ['Hip-Hop', 'Pop', 'Folk', 'Experimental', 'Rock', 'International', 'Electronic', 'Instrumental']
 
-    DATA_DIR = "./data/binary_fma_small_spectrograms_dpi100"
-    RESULT_DIR = "./results/"
+    DATA_DIR = "../data/binary_fma_small_spectrograms_dpi100"
+    RESULT_DIR = "../results/"
     genre_pairs = []
 
     for g1 in genres:
@@ -219,9 +214,14 @@ def main():
             if g1 < g2 and not ([g1, g2] in genre_pairs or [g2, g1] in genre_pairs):
                 genre_pairs.append([g1, g2])
 
+    start = time.time()
+
     for g1, g2 in genre_pairs:
         print(f"Current experiment: {g1}, {g2}")
-        binary_train(g1, g2, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
+        binary_train(g1, g2, num_classes=2, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=30)
+
+    end = time.time()
+    print(f'Training took {end - start} seconds')
 
 
 if __name__ == "__main__":
