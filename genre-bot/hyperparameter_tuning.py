@@ -14,8 +14,10 @@ from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.experiment import Trial
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
+from torchvision.transforms import InterpolationMode
 
-torch.manual_seed(42)
+
+torch.manual_seed(3407)
 
 
 class Net(nn.Module):
@@ -56,7 +58,7 @@ class Net(nn.Module):
 def load_data(data_dir: str | Path):
     transform = transforms.Compose(
         [
-            transforms.Resize((224, 224)),
+            transforms.Resize((224, 224), interpolation=InterpolationMode.NEAREST),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
@@ -88,12 +90,12 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
     trainloader = DataLoader(
         trainset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=0)
     validationloader = DataLoader(
         validationset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=0)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
@@ -189,7 +191,7 @@ def tune_run(num_classes: int, data_dir: str, result_dir: str, num_samples: int 
 
     reporter = CLIReporter(
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=60,
+        max_report_frequency=600,
         print_intermediate_tables=True)
 
     result: ExperimentAnalysis = tune.run(
@@ -199,9 +201,10 @@ def tune_run(num_classes: int, data_dir: str, result_dir: str, num_samples: int 
         num_samples=num_samples,
         scheduler=scheduler,
         progress_reporter=reporter,
-        local_dir=local_dir)
+        local_dir=local_dir,
+        verbose=0)
 
-    best_trial: Trial = result.get_best_trial("loss", "min", "last")  # type: ignore
+    best_trial: Trial = result.get_best_trial("loss", "min", "all")  # type: ignore
     print("Best trial config: {}".format(best_trial.config))
     print("Best trial final validation loss: {}".format(best_trial.last_result["loss"]))
     print("Best trial final validation accuracy: {}".format(best_trial.last_result["accuracy"]))
@@ -230,7 +233,7 @@ def main():
 
     start = time.time()
 
-    tune_run(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, num_samples=50, max_num_epochs=10, gpus_per_trial=1)
+    tune_run(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, num_samples=100, max_num_epochs=15, gpus_per_trial=1)
 
     end = time.time()
     print(f'Tuning took {end - start} seconds')
