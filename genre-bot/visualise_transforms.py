@@ -12,7 +12,7 @@ from torchvision.datasets import ImageFolder
 CLASSES = 8  # Can be changed to 3, 5 or 8 to limit classification over the music genre set
 
 
-def get_standardize_values(dataset: ImageFolder):
+def get_mean_and_std(dataset: ImageFolder):
     loader = DataLoader(dataset, batch_size=len(dataset))
     data = next(iter(loader))
     mean = torch.mean(data[0], dim=(0, 2, 3))
@@ -23,6 +23,8 @@ def get_standardize_values(dataset: ImageFolder):
 def main():
 
     data_dir = f"./data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
+
+    #root=os.path.join(data_dir, "training")
 
     # Original dataset
     original = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=transforms.ToTensor())
@@ -44,7 +46,7 @@ def main():
             transforms.ToTensor(),
         ]
     )
-    resized_nearest = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=nearest_transform)
+    resized_nearest_1 = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=nearest_transform)
 
     # Normalized dataset with colour channel means and stds of (0.5, 0.5, 0.5)
     normalize_transform = transforms.Compose(
@@ -54,10 +56,11 @@ def main():
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
     )
-    resized_and_normalized = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=normalize_transform)
+    resized_and_normalized = torchvision.datasets.ImageFolder(root=data_dir, transform=normalize_transform)
 
     # Standardized dataset with calculated mean and std of the whole dataset
-    mean, std = get_standardize_values(resized_nearest)
+    resized_nearest = torchvision.datasets.ImageFolder(root=data_dir, transform=nearest_transform)
+    mean, std = get_mean_and_std(resized_nearest)
 
     standardize_transform = transforms.Compose(
         [
@@ -66,7 +69,12 @@ def main():
             transforms.Normalize(mean, std)
         ]
     )
-    resized_and_standardized = torchvision.datasets.ImageFolder(root=os.path.join(data_dir, "training"), transform=standardize_transform)
+    resized_and_standardized = torchvision.datasets.ImageFolder(root=data_dir, transform=standardize_transform)
+
+    # Check new mean and std
+    print(get_mean_and_std(resized_nearest))
+    print(get_mean_and_std(resized_and_standardized))
+    print(get_mean_and_std(resized_and_normalized))
 
     # Create comparison figures
 
@@ -74,25 +82,26 @@ def main():
     fig, ax = plt.subplots(ncols=2, squeeze=False)
     ax[0][0].imshow(transforms.ToPILImage()(resized_bilinear[0][0]))
     ax[0][0].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[], title="Bilinear")
-    ax[0][1].imshow(transforms.ToPILImage()(resized_nearest[0][0]))
+    ax[0][1].imshow(transforms.ToPILImage()(resized_nearest_1[0][0]))
     ax[0][1].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[], title="Nearest Neighbour")
-    fig.savefig("spectrogram_interpolation_comparison.png", bbox_inches="tight", dpi=200)
+    fig.savefig("spectrogram_interpolation_comparison.pdf", dpi='figure', format='pdf', bbox_inches="tight")
     plt.close()
 
     # Resize comparison
     fig, ax = plt.subplots(ncols=2, squeeze=False)
     ax[0][0].imshow(transforms.ToPILImage()(original[0][0]))
     ax[0][0].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[], title="496 x 369 px")
-    ax[0][1].imshow(transforms.ToPILImage()(resized_nearest[0][0]))
+    ax[0][1].imshow(transforms.ToPILImage()(resized_nearest_1[0][0]))
     ax[0][1].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[], title="224p x 224 px")
-    fig.savefig("spectrogram_resize_comparison.png", bbox_inches="tight", dpi=200)
+    fig.savefig("spectrogram_resize_comparison.pdf", dpi='figure', format='pdf', bbox_inches="tight")
     plt.close()
 
     # Normalize comparison
-    comparison_images = torch.stack((*[resized_nearest[i][0] for i in range(5)], *[resized_and_normalized[i][0] for i in range(5)], *[resized_and_standardized[i][0] for i in range(5)]))
+    image_range = 800  # run again to see prettier specs
+    comparison_images = torch.stack((*[resized_nearest[i][0] for i in range(image_range, image_range + 5)], *[resized_and_normalized[i][0] for i in range(image_range, image_range + 5)], *[resized_and_standardized[i][0] for i in range(image_range, image_range + 5)]))
     plt.imshow(transforms.ToPILImage()(torchvision.utils.make_grid(comparison_images, nrow=5)))
     plt.axis('off')
-    plt.savefig("spectrogram_normalize_comparison.png", bbox_inches="tight", dpi=200)
+    plt.savefig("spectrogram_normalize_comparison.pdf", dpi='figure', format='pdf', bbox_inches="tight")
     plt.close()
 
 
