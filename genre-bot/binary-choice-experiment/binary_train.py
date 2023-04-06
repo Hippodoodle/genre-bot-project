@@ -12,6 +12,7 @@ from ray import tune
 from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
+from torchvision.transforms import InterpolationMode
 
 torch.manual_seed(3407)
 
@@ -54,7 +55,7 @@ class Net(nn.Module):
 def load_data(data_dir: str | Path):
     transform = transforms.Compose(
         [
-            transforms.Resize((224, 224)),
+            transforms.Resize((224, 224), interpolation=InterpolationMode.NEAREST),
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ]
