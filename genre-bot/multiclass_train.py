@@ -12,8 +12,10 @@ from ray import tune
 from ray.tune import CLIReporter, ExperimentAnalysis
 from ray.tune.schedulers import ASHAScheduler
 from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
+from torchvision.transforms import InterpolationMode
 
-torch.manual_seed(42)
+torch.manual_seed(3407)
 
 
 class Net(nn.Module):
@@ -21,7 +23,7 @@ class Net(nn.Module):
         super().__init__()
         self.network = nn.Sequential(
             # 224 x 224 x 3
-            nn.Conv2d(3, 64, kernel_size=3, padding=1),
+            nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
@@ -51,12 +53,35 @@ class Net(nn.Module):
         return self.network(x)
 
 
-def load_data(data_dir: str | Path):
+def get_mean_and_std(dataset: ImageFolder):
+    loader = DataLoader(dataset, batch_size=len(dataset))
+    data = next(iter(loader))
+    mean = torch.mean(data[0], dim=(0, 2, 3))
+    std = torch.std(data[0], dim=(0, 2, 3))
+    return mean, std
+
+
+def load_data(data_dir: str):
+
+    # Resized dataset with nearest neighbour interpolation
+    nearest_transform = transforms.Compose(
+        [
+            transforms.Resize((224, 224), interpolation=InterpolationMode.NEAREST),
+            transforms.ToTensor(),
+        ]
+    )
+
+    # Standardized dataset with calculated mean and std of the whole dataset
+    resized_nearest = torchvision.datasets.ImageFolder(root=data_dir, transform=nearest_transform)
+    mean, std = get_mean_and_std(resized_nearest)
+    print(mean, std)
+
     transform = transforms.Compose(
         [
-            transforms.Resize((224, 224)),
+            transforms.Resize((224, 224), interpolation=InterpolationMode.NEAREST),
             transforms.ToTensor(),
-            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            #transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+            transforms.Normalize(mean, std)
         ]
     )
 
@@ -69,7 +94,7 @@ def load_data(data_dir: str | Path):
     return trainset, validationset, testset
 
 
-def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
+def train_fma(config, num_classes: int, data_dir: str, num_epochs: int):
 
     net = Net(classes=num_classes, l1=config["l1"], l2=config["l2"])
 
@@ -89,17 +114,17 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
     trainloader = DataLoader(
         trainset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=8)
     validationloader = DataLoader(
         validationset,
         batch_size=int(config["batch_size"]),
-        shuffle=False,
+        shuffle=True,
         num_workers=8)
 
     for epoch in range(num_epochs):  # loop over the dataset multiple times
-        running_loss = 0.0
-        epoch_steps = 0
+        train_loss = 0.0
+        train_steps = 0
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
@@ -114,12 +139,8 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
             loss.backward()
             optimizer.step()
 
-            # print some statistics
-            running_loss += loss.item()
-            epoch_steps += 1
-            if i % 2000 == 1999:  # print every 2000 mini-batches
-                print("[%d, %5d] loss: %.3f" % (epoch + 1, i + 1, running_loss / epoch_steps))
-                running_loss = 0.0
+            train_loss += loss.item()
+            train_steps += 1
 
         # Validation loss
         val_loss = 0.0
@@ -145,10 +166,10 @@ def train_fma(config, num_classes: int, data_dir: str | Path, num_epochs: int):
                 path = os.path.join(checkpoint_dir, "checkpoint")
                 torch.save((net.state_dict(), optimizer.state_dict()), path)
 
-        tune.report(loss=(val_loss / val_steps), accuracy=correct / total)
+        tune.report(loss=(val_loss / val_steps), accuracy=correct / total, train_loss=(train_loss / train_steps))
 
 
-def test_accuracy(net, data_dir: str | Path, device: str = "cpu"):
+def test_accuracy(net, data_dir: str, device: str = "cpu"):
     _, _, testset = load_data(data_dir)
 
     testloader = DataLoader(testset, batch_size=4, shuffle=False, num_workers=2)
@@ -173,14 +194,11 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
     local_dir = os.path.join(result_dir, f"multiclass_{num_classes}_genres", os.path.basename(data_dir))
 
-    #config = {
-    #    "l1": 256,
-    #    "l2": 64,
-    #    "lr": 0.0018890629799798993,
-    #    "momentum": 0.9,
-    #    "batch_size": 4
-    #}
-    config = {'l1': 256, 'l2': 128, 'lr': 0.004877526963999047, 'momentum': 0.5220414060400745, 'batch_size': 8}
+    #config = {"l1": 256, "l2": 64, "lr": 0.0018890629799798993, "momentum": 0.9, "batch_size": 4}
+    #config = {'l1': 256, 'l2': 128, 'lr': 0.004877526963999047, 'momentum': 0.5220414060400745, 'batch_size': 8}
+    #config = {'l1': 32, 'l2': 32, 'lr': 0.0004920074602563476, 'momentum': 0.2272575515730786, 'batch_size': 1}
+    #config = {"batch_size": 2, "l1": 256, "l2": 512, "lr": 0.0008038357614260402, "momentum": 0.36606707968132157}
+    config = {'l1': 32, 'l2': 64, 'lr': 0.008564357333175636, 'momentum': 0.2887587012235814, 'batch_size': 8}
 
     scheduler = ASHAScheduler(
         metric="loss",
@@ -191,7 +209,7 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
 
     reporter = CLIReporter(
         metric_columns=["loss", "accuracy", "training_iteration"],
-        max_report_frequency=60,
+        max_report_frequency=600,
         print_intermediate_tables=False)
 
     _: ExperimentAnalysis = tune.run(
@@ -201,7 +219,8 @@ def multiclass_train(num_classes: int, data_dir: str, result_dir: str, max_num_e
         num_samples=1,
         scheduler=scheduler,
         progress_reporter=reporter,
-        local_dir=local_dir)
+        local_dir=local_dir,
+        verbose=0)
 
 
 def main():
@@ -212,7 +231,7 @@ def main():
 
     start = time.time()
 
-    multiclass_train(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=10)
+    multiclass_train(num_classes=CLASSES, data_dir=DATA_DIR, result_dir=RESULT_DIR, max_num_epochs=30)
 
     end = time.time()
     print(f'Training took {end - start} seconds')
