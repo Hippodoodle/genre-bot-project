@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 
 import pandas as pd
 import numpy as np
@@ -12,7 +11,7 @@ from multiclass_train import Net, load_data, test_accuracy
 
 
 @torch.no_grad()
-def get_f1_score(net, data_dir: str | Path, device: str = "cpu", multiclass: bool = False):
+def get_f1_score(net, data_dir: str, device: str = "cpu", multiclass: bool = False):
     """calculate the f1 score of the model on the given data
 
     Parameters
@@ -52,7 +51,7 @@ def get_f1_score(net, data_dir: str | Path, device: str = "cpu", multiclass: boo
         predicted_value = predicted.tolist()[0]
 
         labels_list.append(actual_value)
-        predicted_list.append(predicted_value)  # TODO: figure out true labels of data
+        predicted_list.append(predicted_value)
 
     if multiclass:
         score = (f1_score(labels_list, predicted_list, zero_division=0, average='micro'),  # type: ignore
@@ -64,68 +63,7 @@ def get_f1_score(net, data_dir: str | Path, device: str = "cpu", multiclass: boo
 
 
 @torch.no_grad()
-def generate_binary_confusion_matrix(net, data_dir: str | Path, device: str = "cpu") -> pd.DataFrame:
-    """Generate confusion matrix for given model and data inputs
-
-    Parameters
-    ----------
-    net : Net
-        model to be evaluated
-    data_dir : str | Path
-        path to data directory
-    device : str, optional
-        device to use, by default "cpu"
-
-    Returns
-    -------
-    pd.DataFrame
-        confusion matrix, as a DataFrame
-    """
-
-    _, _, testset = load_data(data_dir)
-
-    testloader = DataLoader(testset, batch_size=1, shuffle=False, num_workers=2)
-
-    # Initialise counters for confusion matrix
-    true_positive = 0
-    false_positive = 0
-    true_negative = 0
-    false_negative = 0
-
-    # Iterate over all test data and label pairs
-    for inputs, labels in testloader:
-        inputs: torch.Tensor = inputs.to(device)
-        labels: torch.Tensor = labels.to(device)
-
-        outputs = net(inputs)
-
-        predicted: torch.Tensor
-        _, predicted = torch.max(outputs.data, 1)
-
-        actual_value = labels.tolist()[0]
-        predicted_value = predicted.tolist()[0]
-
-        if actual_value == 1 and predicted_value == 1:
-            true_positive += 1
-        elif actual_value == 1 and predicted_value == 0:
-            false_negative += 1
-        elif actual_value == 0 and predicted_value == 1:
-            false_positive += 1
-        elif actual_value == 0 and predicted_value == 0:
-            true_negative += 1
-
-    true_labels = ["", ""]
-
-    for class_label, index in testset.class_to_idx.items():
-        true_labels[index] = class_label
-
-    confusion_matrix = pd.DataFrame([[true_positive, false_positive], [false_negative, true_negative]], columns=true_labels, index=true_labels)
-
-    return confusion_matrix
-
-
-@torch.no_grad()
-def generate_multiclass_confusion_matrix(net, data_dir: str | Path, device: str = "cpu") -> pd.DataFrame:
+def generate_multiclass_confusion_matrix(net, data_dir: str, device: str = "cpu") -> pd.DataFrame:
     """Generate confusion matrix for given model and data inputs
 
     Parameters
@@ -188,58 +126,6 @@ def generate_multiclass_confusion_matrix(net, data_dir: str | Path, device: str 
     return dataframe
 
 
-def binary_evaluation():
-
-    DATA_DIR = "./data/fma_small_spect_dpi100_binary_choice"
-    RESULTS_DIR = "./results/binary_5_genres/"
-    CLASSES = 2
-
-    for experiment_basename in os.listdir(RESULTS_DIR):
-
-        # Get data directory
-        data_dir = os.path.join(DATA_DIR, experiment_basename)
-
-        # Get experiment directory
-        experiment_dir = os.path.join(RESULTS_DIR, experiment_basename)
-        experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
-
-        # Get checkpoint directory
-        checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
-
-        # Load checkpoint config
-        with open(os.path.join(checkpoint_dir, "params.json")) as json_file:
-            config = json.load(json_file)
-
-        # Get latest checkpoint file
-        latest_checkpoint_path = os.path.join(checkpoint_dir,
-                                              max([x for x in os.listdir(checkpoint_dir) if os.path.isdir(os.path.join(checkpoint_dir, x))]),
-                                              "checkpoint")
-
-        # Initialise nn and optimiser
-        model = Net(config["l1"], config["l2"], CLASSES)
-        optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
-
-        model_state, optimizer_state = torch.load(latest_checkpoint_path)
-        model.load_state_dict(model_state)
-        optimiser.load_state_dict(optimizer_state)
-
-        model.eval()
-
-        device = "cpu"
-        if torch.cuda.is_available():
-            device = "cuda:0"
-        model.to(device)
-
-        test_acc = test_accuracy(model, device, data_dir)
-        print(f"Accuracy for {experiment_basename} experiment: {test_acc}")
-
-        f1_score = get_f1_score(model, data_dir, device)
-        print(f"F1 score for {experiment_basename} experiment: {f1_score}")
-
-        confusion_matrix = generate_binary_confusion_matrix(model, data_dir, device)
-        print(confusion_matrix)
-
-
 def multiclass_evaluation():
 
     CLASSES = 8
@@ -250,7 +136,8 @@ def multiclass_evaluation():
     data_dir = DATA_DIR
 
     # Manually choose dir to evaluate
-    checkpoint_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/tuning_multiclass_8_genres/multiclass_8_fma_small_spectrograms_dpi100/train_fma_2023-03-27_18-00-48/train_fma_ec1a1_00030_30_batch_size=8,l1=256,l2=128,lr=0.0049,momentum=0.5220_2023-03-27_20-32-14"
+    checkpoint_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/multiclass_8_genres/multiclass_8_fma_small_spectrograms_dpi100/train_fma_2023-04-01_22-32-20/train_fma_af3ac_00000_0_2023-04-01_22-32-21"
+    checkpoint_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/multiclass_8_genres/multiclass_8_fma_small_spectrograms_dpi100/train_fma_2023-04-01_23-13-59/train_fma_805b7_00000_0_2023-04-01_23-13-59"
 
     # Get latest experiment directory if none manually chosen
     if checkpoint_dir is None:
@@ -268,7 +155,7 @@ def multiclass_evaluation():
     best_checkpoint_path: str = ""
 
     # Iterate over checkpoints
-    for i in range(5, 10):
+    for i in range(5, 20):
 
         # Get latest checkpoint file
         latest_checkpoint_path = os.path.join(checkpoint_dir,
@@ -281,9 +168,9 @@ def multiclass_evaluation():
         optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
 
         # Load state dicts
-        model_state, optimizer_state = torch.load(latest_checkpoint_path)
+        model_state, optimiser_state = torch.load(latest_checkpoint_path)
         model.load_state_dict(model_state)
-        optimiser.load_state_dict(optimizer_state)
+        optimiser.load_state_dict(optimiser_state)
 
         model.eval()
 
@@ -292,22 +179,20 @@ def multiclass_evaluation():
             device = "cuda:0"
         model.to(device)
 
-        _, f1_score_macro = get_f1_score(model, data_dir, device, multiclass=True)  # type: ignore
+        f1_score_micro, f1_score_macro = get_f1_score(model, data_dir, device, multiclass=True)  # type: ignore
 
-        if f1_score_macro > best_f1_macro_score:
-            best_f1_macro_score = f1_score_macro
+        if f1_score_micro > best_f1_macro_score:
+            best_f1_macro_score = f1_score_micro
             best_checkpoint_path = latest_checkpoint_path
 
         del model
 
     # Initialise model and optimiser
     model = Net(CLASSES, l1=config["l1"], l2=config["l2"])
-    optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
 
     # Load state dicts
-    model_state, optimizer_state = torch.load(best_checkpoint_path)
+    model_state, _ = torch.load(best_checkpoint_path)
     model.load_state_dict(model_state)
-    optimiser.load_state_dict(optimizer_state)
 
     model.eval()
 
@@ -329,8 +214,6 @@ def multiclass_evaluation():
 
 
 def main():
-
-    # binary_evaluation()
 
     multiclass_evaluation()
 
