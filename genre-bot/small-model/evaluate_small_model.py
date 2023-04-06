@@ -1,11 +1,9 @@
-import json
 import os
 from pathlib import Path
 
 import pandas as pd
 import numpy as np
 import torch
-import torch.optim as optim
 from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader
 from small_multiclass_train import Net, load_data, test_accuracy
@@ -52,7 +50,7 @@ def get_f1_score(net, data_dir: str | Path, device: str = "cpu", multiclass: boo
         predicted_value = predicted.tolist()[0]
 
         labels_list.append(actual_value)
-        predicted_list.append(predicted_value)  # TODO: figure out true labels of data
+        predicted_list.append(predicted_value)
 
     if multiclass:
         score = (f1_score(labels_list, predicted_list, zero_division=0, average='micro'),  # type: ignore
@@ -129,48 +127,41 @@ def generate_confusion_matrix(net, data_dir: str | Path, device: str = "cpu") ->
 
 def evaluate():
 
-    CLASSES = 3
+    CLASSES = 8
     DATA_DIR = f"C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/data/multiclass_{CLASSES}_fma_small_spectrograms_dpi100"
-    RESULTS_DIR = f"C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/multiclass_{CLASSES}_genres/"
+    RESULTS_DIR = f"C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/small_{CLASSES}_genres/"
 
     # Get data directory
     data_dir = DATA_DIR
 
     # Manually choose dir to evaluate
-    experiment_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/multiclass_3_genres/multiclass_3_fma_small_spectrograms_dpi100/train_fma_2023-03-25_18-40-27/"
+    checkpoint_dir = "C:/Users/thoma/Workspace/Uni/Year-4-Individual-Project/genre-bot-project/genre-bot/results/small_8_genres/multiclass_8_fma_small_spectrograms_dpi100/train_fma_2023-04-02_17-02-45/train_fma_ce888_00000_0_2023-04-02_17-02-45"
 
     # Get latest experiment directory if none manually chosen
-    if experiment_dir is None:
+    if checkpoint_dir is None:
         experiment_dir = os.path.join(RESULTS_DIR, os.path.basename(DATA_DIR))
         experiment_dir = max([os.path.join(experiment_dir, checkpoint_file) for checkpoint_file in os.listdir(experiment_dir)], key=os.path.getctime)
 
-    # Get checkpoint directory
-    checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
-
-    # Load checkpoint config
-    with open(os.path.join(checkpoint_dir, "params.json")) as json_file:
-        config = json.load(json_file)
+        # Get checkpoint directory
+        checkpoint_dir = os.path.join(experiment_dir, [x for x in os.listdir(experiment_dir) if os.path.isdir(os.path.join(experiment_dir, x))][0])
 
     best_f1_macro_score = 0
     best_checkpoint_path: str = ""
 
     # Iterate over checkpoints
-    for i in range(10):
+    for i in range(30):
 
         # Get latest checkpoint file
         latest_checkpoint_path = os.path.join(checkpoint_dir,
-                                              # max([x for x in os.listdir(checkpoint_dir) if os.path.isdir(os.path.join(checkpoint_dir, x))]),
                                               [x for x in os.listdir(checkpoint_dir) if os.path.isdir(os.path.join(checkpoint_dir, x))][i],
                                               "checkpoint")
 
         # Initialise model and optimiser
         model = Net(CLASSES)
-        optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
 
         # Load state dicts
-        model_state, optimizer_state = torch.load(latest_checkpoint_path)
+        model_state, _ = torch.load(latest_checkpoint_path)
         model.load_state_dict(model_state)
-        optimiser.load_state_dict(optimizer_state)
 
         model.eval()
 
@@ -189,12 +180,10 @@ def evaluate():
 
     # Initialise model and optimiser
     model = Net(CLASSES)
-    optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
 
     # Load state dicts
-    model_state, optimizer_state = torch.load(best_checkpoint_path)
+    model_state, _ = torch.load(best_checkpoint_path)
     model.load_state_dict(model_state)
-    optimiser.load_state_dict(optimizer_state)
 
     model.eval()
 

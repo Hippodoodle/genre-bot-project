@@ -165,12 +165,10 @@ def multiclass_evaluation():
 
         # Initialise model and optimiser
         model = Net(CLASSES, l1=config["l1"], l2=config["l2"])
-        optimiser = optim.SGD(model.parameters(), lr=config["lr"], momentum=config["momentum"])
 
         # Load state dicts
-        model_state, optimiser_state = torch.load(latest_checkpoint_path)
+        model_state, _ = torch.load(latest_checkpoint_path)
         model.load_state_dict(model_state)
-        optimiser.load_state_dict(optimiser_state)
 
         model.eval()
 
