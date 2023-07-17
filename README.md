@@ -47,25 +47,25 @@
         - Research standards for spectrograms and spectrogram generation (logarithmic scale, miel scale)
         - Test out different resolutions of spectrogram (trade off between training time and data loss)
         - 100 datapoints is good to start with, check against random chance and if it's promissing, improve the dataset
-28/10/2022 Fourth Supervisor Meeting
+- 28/10/2022 Fourth Supervisor Meeting
     - Notes:
         - How to save spectrograms: png but compression, try binary if possible
         - Spectrogram resolution is fine
         - Chris will send help with pandas
-07/11/2022 Fifth Supervisor Meeting
+- 07/11/2022 Fifth Supervisor Meeting
     - Notes:
         - Use ImageNet dataset example/tutorials for loading in data
         - file tree structure to sort data into subsets (train/rock/ etc)
         - research format of input into model
         - could as an extension compare performance with a resnet model (for diss)
         - compare other research done on this topic (for diss)
-14/11/2022 Sixth Supervisor Meeting
+- 14/11/2022 Sixth Supervisor Meeting
     - Notes:
         - Servers available at Uni (stlinux12 and stlinux13 have GPUs)
         - Start with fewer genres then expand (binary choice)
         - Lower resolution of input data, perhaps 256x256
         - both should help fix memory issues
-21/11/2022 Seventh Supervisor Meeting
+- 21/11/2022 Seventh Supervisor Meeting
     - Notes:
         - Presented results, discussed next steps
         - Binary choice good so far, to add more data classes and see how it performs
@@ -74,7 +74,7 @@
         - Consider running tests on other binary class sets
         - Consider examining auxiliary genres and running binary test on most closely related top-genres
             - expected to see in diss, confusion matrix
-28/11/2022 Eighth Supervisor Meeting
+- 28/11/2022 Eighth Supervisor Meeting
     - Notes:
         - Presented results, discussed next steps
         - Next, look at improving the model and dataset
@@ -84,7 +84,7 @@
         - Definitely implement dropout layers and other techniques
         - Look at ResNet and use as inspiration for current custom model (gives things to talk about in diss)
         - Don't forget status report at end of semester
-12/12/2022 Ninth Supervisor Meeting
+- 12/12/2022 Ninth Supervisor Meeting
     - Notes:
         - Discussed end of semester report
         - Outline Dissertation
@@ -93,7 +93,7 @@
         - Look at other literature, see what others have done, put my work into context
         - Document process, choices, dissertation can balance out grade if project falls short
         - Think of shape of dissertation, get stuff written down
-13/01/2023 Tenth Supervisor Meeting
+- 13/01/2023 Tenth Supervisor Meeting
     - Notes:
         - Train model multiple times since trianing might be stochastic
         - Discuss the range of training accuracy in diss
@@ -103,14 +103,14 @@
         - This diss: using image classification cnn model on spectrograms to classify song genre
         - Use ResNet, chop off the final layer of pre-trained model, and retrain the classification top layer -> Transfer learning
         - Tutorials lookup: transfer learning on resnet
-17/01/2023 Eleventh Supervisor Meeting
+- 17/01/2023 Eleventh Supervisor Meeting
     - Notes:
         - Have a look at F1 score for confusion matrix metric
         - F1 looks at rate of false positives and false negatives
         - First look at accuracy, but definitely use F1 score for analysis
         - Number of final outputs does matter, make sure code changes final layer to have 3 classes
         - Store results in a csv file, that way can be imported into exel easily
-24/01/2023 Twelth Supervisor Meeting
+- 24/01/2023 Twelth Supervisor Meeting
     - Notes:
         - Presented experimental results
         - run experiment on full 8 genres
@@ -126,7 +126,7 @@
             -> might not be a lot better than the shallow model, they are trained for 1000s of classes
         - potentially create experiment to comapre model depths on 8 genre set
             -> remove layers of model and compare performance (perhaps look at resnet/alexnet and use techniques from them)
-31/01/2023 Thirteenth Supervisor Meeting
+- 31/01/2023 Thirteenth Supervisor Meeting
     - Notes:
         - Consider using different splits for training/test data sets on worst performing binary tests (see emails from Chris)
         - Check balance of training and validation set (could be causing issues)
@@ -139,7 +139,7 @@
             - present results
             - early on, present work done by other people (how they do it, what they've done, what I am trying to do)
             - explore non neural network solutions (SVMs good for music for example) -> link back to **here
-07/02/2023 Fourteenth Supervisor Meeting
+- 07/02/2023 Fourteenth Supervisor Meeting
     - Notes:
         - Presented results
         - Suggested lr scheduler
@@ -149,7 +149,7 @@
         - 8 way confusion matrix reinforces the folk-instrumental confusion, reassuring that results are congruent
         - Use a different confusion matrix for each model -> if concerned about page space, can put matrices in the appendix
         - Diss probably won't go far enough for publication, but could be handed on to a master's student to carry on research
-24/02/2023 Fithteenth Supervisor Meeting
+- 24/02/2023 Fithteenth Supervisor Meeting
     - Notes:
         - Talked about dissertation progress
         - Should look at example dissertations
@@ -158,7 +158,7 @@
         - discussed how confusion matrix changes throughout training
             -> not invaluable to think about/research further/talk about
         - get on with my 5 genre experiment and get some stuff written down 
-03/03/2023 Sixteenth Supervisor Meeting
+- 03/03/2023 Sixteenth Supervisor Meeting
     - Notes:
         - push past the humble beginings part -> more valuable to talk about what didn't work but since it worked fine 
         - talk about just doing general image recognition, it's been done a lot so there's lots of ressources out there, but it's not been applied much to this problem
@@ -169,11 +169,11 @@
         - write a short bit  in the conclusion -> a very subjective problem
         - third might not be a research question, just a point to talk about 
         - I was thinking: can modern techniques improve performance for this problem (Chris says: don't other with this question)
-10/03/2023 Seventeenth Supervisor Meeting
+- 10/03/2023 Seventeenth Supervisor Meeting
     - Notes:
         - Sent over some of the dissertation for feedback
         - Refer to other papers in background, tuck them away although they are an important
-14/03/2023 Eighteenth Supervisor Meeting
+- 14/03/2023 Eighteenth Supervisor Meeting
     - Notes:
         - "we" is fine
         - unlikely anyone will want to run the code
